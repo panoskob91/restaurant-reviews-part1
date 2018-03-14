@@ -93,6 +93,15 @@ updateRestaurants = () => {
   const cIndex = cSelect.selectedIndex;
   const nIndex = nSelect.selectedIndex;
 
+  let cOptions = Array.prototype.slice.call(cSelect);
+  let nOptions = Array.prototype.slice.call(nSelect);
+
+  for (let i = 0; i < this.cOptions; i++) {
+    let cItem = this.cOptions
+    cItem.setAttribute('aria-posinset', i + 1);
+    cItem.setAttribute('aria-setsize', this.cOptions.length);
+  }
+
   const cuisine = cSelect[cIndex].value;
   const neighborhood = nSelect[nIndex].value;
 
@@ -141,19 +150,26 @@ createRestaurantHTML = (restaurant) => {
   const image = document.createElement('img');
   image.className = 'restaurant-img';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
-  image.alt = 'Restaurant image';
+  image.alt = 'restaurant ' + (restaurant.name) + ', image';
+  image.setAttribute('tabindex', '0');
   li.append(image);
 
   const name = document.createElement('h1');
   name.innerHTML = restaurant.name;
+  name.setAttribute('tabindex', '0');
+  name.setAttribute('aria-label', 'restaurant name, ' + restaurant.name);
   li.append(name);
 
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
+  neighborhood.setAttribute('tabindex', '0');
+  neighborhood.setAttribute('aria-label', 'restaurant neighborhood, ' + restaurant.neighborhood);
   li.append(neighborhood);
 
   const address = document.createElement('p');
   address.innerHTML = restaurant.address;
+  address.setAttribute('tabindex', '0');
+  address.setAttribute('aria-label', 'restaurant address, ' + restaurant.address);
   li.append(address);
 
   const more = document.createElement('a');
