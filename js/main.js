@@ -36,6 +36,7 @@ fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
     option.innerHTML = neighborhood;
     option.value = neighborhood;
     select.append(option);
+
   });
 }
 
@@ -65,7 +66,10 @@ fillCuisinesHTML = (cuisines = self.cuisines) => {
     option.value = cuisine;
     select.append(option);
   });
+
 }
+
+
 
 /**
  * Initialize Google map, called from HTML.
@@ -93,17 +97,16 @@ updateRestaurants = () => {
   const cIndex = cSelect.selectedIndex;
   const nIndex = nSelect.selectedIndex;
 
-  let cOptions = Array.prototype.slice.call(cSelect);
-  let nOptions = Array.prototype.slice.call(nSelect);
-
-  for (let i = 0; i < this.cOptions; i++) {
-    let cItem = this.cOptions
-    cItem.setAttribute('aria-posinset', i + 1);
-    cItem.setAttribute('aria-setsize', this.cOptions.length);
-  }
-
   const cuisine = cSelect[cIndex].value;
   const neighborhood = nSelect[nIndex].value;
+
+  let cElements = cSelect.querySelectorAll('option');
+  cSelect.setAttribute('aria-setsize', cElements.length);
+  cSelect[cIndex].setAttribute('tabindex', '0');
+
+  let nElements = nSelect.querySelectorAll('option');
+  nSelect.setAttribute('aria-setsize', nElements.length);
+  nSelect[nIndex].setAttribute('tabindex', '0');
 
   DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {
     if (error) { // Got an error!
