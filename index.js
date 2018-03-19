@@ -2,6 +2,7 @@ const elementsCacheName = 'Restaurant Reviews page elements';
 const dataCacheName = 'Restaurant Reviews Data';
 const scriptCacheName = 'Restaurant Reviews scripts';
 
+
 //Setup and populate caches
 self.addEventListener('install', function(event) {
     console.log('I am installed');
@@ -44,7 +45,7 @@ self.addEventListener('install', function(event) {
         caches.open(scriptCacheName).then(function(cache) {
             return cache.addAll([
 
-                '/js/sw/index.js',
+                '/index.js',
                 '/js/dbhelper.js',
                 '/js/main.js',
                 '/js/restaurant_info.js'
