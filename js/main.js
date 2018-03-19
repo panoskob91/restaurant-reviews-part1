@@ -5,7 +5,7 @@ var map
 var markers = []
 
 if (navigator.serviceWorker) {
-  navigator.serviceWorker.register('js/sw/index.js').then(function(res){
+  navigator.serviceWorker.register('/js/sw/index.js').then(function(res){
     console.log('Success: ' + res);
   }).catch(function(err){
     console.log('Failure: ' + err);

@@ -1,5 +1,3 @@
-console.log('SW fun');
-
 const elementsCacheName = 'Restaurant Reviews page elements';
 const dataCacheName = 'Restaurant Reviews Data';
 const scriptCacheName = 'Restaurant Reviews scripts';
@@ -7,6 +5,7 @@ const scriptCacheName = 'Restaurant Reviews scripts';
 //Setup and populate caches
 self.addEventListener('install', function(event) {
     console.log('I am installed');
+
     event.waitUntil(
         //Setup and populate element cache
         caches.open(elementsCacheName).then(function(cache){
@@ -36,6 +35,7 @@ self.addEventListener('install', function(event) {
                 '/img/9.jpg',
                 '/img/10.jpg',
                 '/data/restaurants.json'
+
             ]);
         }).catch(function(error) {
             console.log('data cache error: ' + error);
@@ -57,9 +57,16 @@ self.addEventListener('install', function(event) {
     );
 });
 
+self.addEventListener('activate', function() {
+    console.log('I am active');
+});
+
 self.addEventListener('fetch', function(event) {
+    console.log('fetch');
+    console.log(event.request);
     event.respondWith(
         caches.match(event.request).then(function(response) {
+            console.log(response);
             return response || fetch(event.request);
         }).catch(function(error) {
             console.log('Fetching error occured ' + error);
