@@ -45,7 +45,7 @@ self.addEventListener('install', function(event) {
         caches.open(scriptCacheName).then(function(cache) {
             return cache.addAll([
 
-                '/index.js',
+                '/sw.js',
                 '/js/dbhelper.js',
                 '/js/main.js',
                 '/js/restaurant_info.js'
@@ -68,7 +68,13 @@ self.addEventListener('fetch', function(event) {
     console.log(event.request);
      event.respondWith(
         caches.match(event.request).then(function(response) {
-            return response || fetch(event.request);
+        let requestClone = event.request.clone();
+            if (response){
+            //return response || fetch(event.request);
+            return response;
+        }
+            return fetch(event.request);
+
         }).catch(function(error) {
             console.log('Fetching error occured ' + error);
         })
