@@ -5,7 +5,7 @@ var map
 var markers = []
 
 if (navigator.serviceWorker) {
-  navigator.serviceWorker.register('/index.js').then(function(res){
+  navigator.serviceWorker.register('/sw.js').then(function(res){
     console.log('Success: ' + res);
   }).catch(function(err){
     console.log('Failure: ' + err);
@@ -109,11 +109,11 @@ updateRestaurants = () => {
   const neighborhood = nSelect[nIndex].value;
 
   let cElements = cSelect.querySelectorAll('option');
-  cSelect.setAttribute('aria-setsize', cElements.length);
+  //cSelect.setAttribute('aria-setsize', cElements.length);
   cSelect[cIndex].setAttribute('tabindex', '0');
 
   let nElements = nSelect.querySelectorAll('option');
-  nSelect.setAttribute('aria-setsize', nElements.length);
+  //nSelect.setAttribute('aria-setsize', nElements.length);
   nSelect[nIndex].setAttribute('tabindex', '0');
 
   DBHelper.fetchRestaurantByCuisineAndNeighborhood(cuisine, neighborhood, (error, restaurants) => {

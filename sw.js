@@ -62,15 +62,17 @@ self.addEventListener('activate', function() {
     console.log('I am active');
 });
 
+
 self.addEventListener('fetch', function(event) {
     console.log('fetch');
     console.log(event.request);
-    event.respondWith(
+     event.respondWith(
         caches.match(event.request).then(function(response) {
-            console.log(response);
             return response || fetch(event.request);
         }).catch(function(error) {
             console.log('Fetching error occured ' + error);
         })
+
     );
+
 });
