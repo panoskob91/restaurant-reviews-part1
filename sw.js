@@ -1,6 +1,6 @@
-const elementsCacheName = 'Restaurant Reviews page elements';
-const dataCacheName = 'Restaurant Reviews Data';
-const scriptCacheName = 'Restaurant Reviews scripts';
+const elementsCacheName = 'restaurant-reviews-page-elements';
+const dataCacheName = 'restaurant-reviews-data';
+const scriptCacheName = 'Restaurant-reviews-scripts';
 
 
 //Setup and populate caches
@@ -64,19 +64,25 @@ self.addEventListener('activate', function() {
 
 
 self.addEventListener('fetch', function(event) {
-    console.log('fetch');
-    console.log(event.request);
+
      event.respondWith(
         caches.match(event.request).then(function(response) {
-        let requestClone = event.request.clone();
+
             if (response){
-            //return response || fetch(event.request);
-            return response;
+            console.log('REQUEST: ', event.request);
+            console.log('RESPONSE: ', response);
+                return response;
         }
-            return fetch(event.request);
+        let requestClone = event.request.clone();
+            return fetch(requestClone).then(function(networkResponse) {
+
+                    return networkResponse;
+
+            });
 
         }).catch(function(error) {
-            console.log('Fetching error occured ' + error);
+            console.log('Cache fetching error: ' + error);
+                return caches.match('index.html');
         })
 
     );
