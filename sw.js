@@ -69,8 +69,8 @@ self.addEventListener('fetch', function(event) {
         caches.match(event.request).then(function(response) {
 
             if (response){
-            console.log('REQUEST: ', event.request);
-            console.log('RESPONSE: ', response);
+            //console.log('REQUEST: ', event.request);
+            //console.log('RESPONSE: ', response);
                 return response;
         }
         let requestClone = event.request.clone();
