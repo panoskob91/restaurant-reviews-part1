@@ -12,6 +12,8 @@ if (navigator.serviceWorker) {
   });
 }
 
+
+
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */

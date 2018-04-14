@@ -20,20 +20,38 @@ class DBHelper {
     xhr.open('GET', DBHelper.DATABASE_URL);
     let XHR = new XMLHttpRequest();
     XHR.open('GET', 'http://localhost:1337/restaurants');
-    console.log(XHR);
-    xhr.onload = () => {
-      if (xhr.status === 200) { // Got a success response from server!
-        const json = JSON.parse(xhr.responseText);
-        //const JSON = JSON.parse(XHR.responseText);
-        //console.log(JSON);
-        const restaurants = json.restaurants;
-        callback(null, restaurants);
-      } else { // Oops!. Got an error from server.
-        const error = (`Request failed. Returned status of ${xhr.status}`);
+    XHR.onload = function() {
+      if (XHR.status === 200) {
+
+        const jsonObject = JSON.parse(XHR.responseText);
+        const restauants = jsonObject;
+        callback(null, restauants);
+
+      }else{
+
+        const error = 'Request failed. Returned status of ' + XHR.status;
         callback(error, null);
+
       }
+
     };
-    xhr.send();
+    XHR.onerror = function(error) {
+      console.log('An error occured: ', error);
+    }
+
+    // xhr.onload = () => {
+    //   if (xhr.status === 200) { // Got a success response from server!
+    //     const json = JSON.parse(xhr.responseText);
+    //     const restaurants = json.restaurants;
+    //     callback(null, restaurants);
+    //   } else { // Oops!. Got an error from server.
+    //     const error = (`Request failed. Returned status of ${xhr.status}`);
+    //     callback(error, null);
+    //   }
+    // };
+
+    // xhr.send();
+    XHR.send();
   }
 
   /**
@@ -155,7 +173,8 @@ class DBHelper {
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant) {
-    return (`/img/${restaurant.photograph}`);
+    //return (`/img/${restaurant.photograph}`);
+    return ('/img/' + restaurant.id + '.jpg');
   }
 
   /**
