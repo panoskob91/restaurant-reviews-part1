@@ -5,7 +5,7 @@ const scriptCacheName = 'Restaurant-reviews-scripts';
 
 //Setup and populate caches
 self.addEventListener('install', function(event) {
-    console.log('I am installed');
+    console.log('SW installed');
 
     event.waitUntil(
         //Setup and populate element cache
@@ -59,7 +59,7 @@ self.addEventListener('install', function(event) {
 });
 
 self.addEventListener('activate', function() {
-    console.log('I am active');
+    console.log('SW active');
 });
 
 

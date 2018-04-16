@@ -22,8 +22,8 @@ class DBHelper {
     XHR.open('GET', 'http://localhost:1337/restaurants');
     XHR.onload = function() {
       if (XHR.status === 200) {
-
         const jsonObject = JSON.parse(XHR.responseText);
+        console.log(jsonObject);
         const restauants = jsonObject;
         callback(null, restauants);
 
