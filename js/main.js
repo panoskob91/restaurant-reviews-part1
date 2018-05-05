@@ -17,6 +17,7 @@ if (navigator.serviceWorker) {
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
 document.addEventListener('DOMContentLoaded', (event) => {
+  //On content load, fetch restaurants/cuisines with XHR request.
   fetchNeighborhoods();
   fetchCuisines();
 });

@@ -2,7 +2,6 @@ const elementsCacheName = 'restaurant-reviews-page-elements';
 const dataCacheName = 'restaurant-reviews-data';
 const scriptCacheName = 'Restaurant-reviews-scripts';
 
-
 //Setup and populate caches
 self.addEventListener('install', function(event) {
     console.log('SW installed');
@@ -48,7 +47,8 @@ self.addEventListener('install', function(event) {
                 '/sw.js',
                 '/js/dbhelper.js',
                 '/js/main.js',
-                '/js/restaurant_info.js'
+                '/js/restaurant_info.js',
+                '/js/idbManagement.js'
 
             ]);
         }).catch(function(error) {
@@ -64,27 +64,37 @@ self.addEventListener('activate', function() {
 
 
 self.addEventListener('fetch', function(event) {
-
-     event.respondWith(
+    event.respondWith(
+        //Firstly look for responses on cache
         caches.match(event.request).then(function(response) {
-
+            //If response exists in cache, get if from there
             if (response){
-            //console.log('REQUEST: ', event.request);
-            //console.log('RESPONSE: ', response);
                 return response;
-        }
+            }
+            //Else reach out to network
         let requestClone = event.request.clone();
             return fetch(requestClone).then(function(networkResponse) {
-
-                    return networkResponse;
-
+                return networkResponse;
             });
-
+        //If fetch event fails (or no connection) get cached data
         }).catch(function(error) {
             console.log('Cache fetching error: ' + error);
-                return caches.match('index.html');
+                return caches.match('index.html').then(function(){
+                    readDB();
+                });
+
         })
 
     );
 
 });
+//Function used to read data from indexed DB
+function readDB() {
+    var request = indexedDB.open('restaurants');
+    request.onsuccess = function(e){
+        var db = e.target.result;
+        var transaction = db.transaction(['restaurant'], 'readonly');
+        var store = tx.objectStore('beverages');
+        return store.getAll();
+    }
+  }

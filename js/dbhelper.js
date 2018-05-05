@@ -2,7 +2,6 @@
  * Common database helper functions.
  */
 class DBHelper {
-
   /**
    * Database URL.
    * Change this to restaurants.json file location on your server.
@@ -11,7 +10,6 @@ class DBHelper {
     const port = 8000 // Change this to your server port
     return `http://localhost:${port}/data/restaurants.json`;
   }
-
   /**
    * Fetch all restaurants.
    */
@@ -23,10 +21,27 @@ class DBHelper {
     XHR.onload = function() {
       if (XHR.status === 200) {
         const jsonObject = JSON.parse(XHR.responseText);
-        console.log(jsonObject);
         const restauants = jsonObject;
-        callback(null, restauants);
 
+        var openRequest = indexedDB.open('restaurants', 1);
+        openRequest.onupgradeneeded = function(e){
+          var db = e.target.result;
+          if(!db.objectStoreNames.contains('restaurant')){
+            var objectStore = db.createObjectStore('restaurant', {keypath : 'name'});
+            var index = objectStore.createIndex('updatedAt', 'updatedAt');
+          }
+        }
+        openRequest.onsuccess = function(e){
+          var db = e.target.result;
+          var transaction = db.transaction('restaurant', 'readwrite');
+          var store = transaction.objectStore('restaurant');
+          for (let i = 0; i < jsonObject.length; i++)
+          {
+            store.put(jsonObject[i], jsonObject[i].name);
+          }
+
+        }
+        callback(null, restauants);
       }else{
 
         const error = 'Request failed. Returned status of ' + XHR.status;
