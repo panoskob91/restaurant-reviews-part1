@@ -23,17 +23,30 @@ self.addEventListener('install', function(event) {
         caches.open(dataCacheName).then(function(cache){
             return cache.addAll([
 
-                '/img/1.jpg',
-                '/img/2.jpg',
-                '/img/3.jpg',
-                '/img/4.jpg',
-                '/img/4.jpg',
-                '/img/5.jpg',
-                '/img/6.jpg',
-                '/img/7.jpg',
-                '/img/8.jpg',
-                '/img/9.jpg',
-                '/img/10.jpg',
+                // '/img/1.jpg',
+                // '/img/2.jpg',
+                // '/img/3.jpg',
+                // '/img/4.jpg',
+                // '/img/4.jpg',
+                // '/img/5.jpg',
+                // '/img/6.jpg',
+                // '/img/7.jpg',
+                // '/img/8.jpg',
+                // '/img/9.jpg',
+                // '/img/10.jpg',
+                // '/data/restaurants.json'
+
+                '/converted-images-toJPEG/1.jpeg',
+                '/converted-images-toJPEG/2.jpeg',
+                '/converted-images-toJPEG/3.jpeg',
+                '/converted-images-toJPEG/4.jpeg',
+                '/converted-images-toJPEG/4.jpeg',
+                '/converted-images-toJPEG/5.jpeg',
+                '/converted-images-toJPEG/6.jpeg',
+                '/converted-images-toJPEG/7.jpeg',
+                '/converted-images-toJPEG/8.jpeg',
+                '/converted-images-toJPEG/9.jpeg',
+                '/converted-images-toJPEG/10.jpeg',
                 '/data/restaurants.json'
 
             ]);
@@ -94,7 +107,7 @@ function readDB() {
     request.onsuccess = function(e){
         var db = e.target.result;
         var transaction = db.transaction(['restaurant'], 'readonly');
-        var store = tx.objectStore('beverages');
+        var store = transaction.objectStore('restaurant');
         return store.getAll();
     }
   }

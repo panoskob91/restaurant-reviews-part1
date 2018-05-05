@@ -1,0 +1,24 @@
+{
+    "name": "Restaurant reviews",
+    "short_name": "Restaurants",
+    "description": "Create and check restaurant reviews",
+    "background_color": "#252831",
+    "theme_color": "#252831",
+    "icons": [{
+      "src": "R-logo-256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "R-logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "R-logo-128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    }],
+    "display": "fullscreen",
+    "orientation": "landscape"
+  }
