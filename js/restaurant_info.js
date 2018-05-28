@@ -117,22 +117,32 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
+  const addReviewButton = document.createElement('button');
+
   title.innerHTML = 'Reviews';
   title.setAttribute('tabindex', '0');
   container.appendChild(title);
+  addReviewButton.setAttribute('id', 'add-reviews');
+  //addReviewButton.setAttribute('onclick', 'addReview()');
+  addReviewButton.innerHTML = 'Add a review';
 
   if (!reviews) {
     const noReviews = document.createElement('p');
     noReviews.innerHTML = 'No reviews yet!';
     noReviews.setAttribute('tabindex', '0');
     container.appendChild(noReviews);
+    container.appendChild(addReviewButton);
     return;
   }
+
+  container.appendChild(addReviewButton);
+
   const ul = document.getElementById('reviews-list');
   reviews.forEach(review => {
     ul.appendChild(createReviewHTML(review));
   });
   container.appendChild(ul);
+
 }
 
 /**

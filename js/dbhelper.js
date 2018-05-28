@@ -10,6 +10,12 @@ class DBHelper {
     const port = 8000 // Change this to your server port
     return `http://localhost:${port}/data/restaurants.json`;
   }
+
+  static get RESTAURANTS_URL() {
+    const port = 1337;
+    return 'http://localhost:' + port + '/restaurants';
+  }
+
   /**
    * Fetch all restaurants.
    */
@@ -17,7 +23,7 @@ class DBHelper {
     let xhr = new XMLHttpRequest();
     xhr.open('GET', DBHelper.DATABASE_URL);
     let XHR = new XMLHttpRequest();
-    XHR.open('GET', 'http://localhost:1337/restaurants');
+    XHR.open('GET', DBHelper.RESTAURANTS_URL);
     XHR.onload = function() {
       if (XHR.status === 200) {
         const jsonObject = JSON.parse(XHR.responseText);
