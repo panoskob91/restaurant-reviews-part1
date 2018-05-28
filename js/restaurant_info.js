@@ -123,7 +123,7 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   title.setAttribute('tabindex', '0');
   container.appendChild(title);
   addReviewButton.setAttribute('id', 'add-reviews');
-  //addReviewButton.setAttribute('onclick', 'addReview()');
+  addReviewButton.setAttribute('onclick', 'addReview()');
   addReviewButton.innerHTML = 'Add a review';
 
   if (!reviews) {
@@ -135,14 +135,12 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     return;
   }
 
-  container.appendChild(addReviewButton);
-
   const ul = document.getElementById('reviews-list');
   reviews.forEach(review => {
     ul.appendChild(createReviewHTML(review));
   });
   container.appendChild(ul);
-
+  container.appendChild(addReviewButton);
 }
 
 /**

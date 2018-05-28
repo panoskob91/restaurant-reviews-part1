@@ -368,6 +368,14 @@ nav h1 a {
 
 }
 
+.form-hidden {
+  display: none;
+}
+
+.modal-window {
+  background-color: red;
+}
+
 #reviews-container #add-reviews {
   background-color: #333;
   color: #f18200;
