@@ -16,6 +16,11 @@ class DBHelper {
     return 'http://localhost:' + port + '/restaurants';
   }
 
+  static get REVIEWS_URL() {
+    const port = 1337;
+    return 'http://localhost:' + port + '/reviews/';
+  }
+
   /**
    * Fetch all restaurants.
    */

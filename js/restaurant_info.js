@@ -23,6 +23,7 @@ window.initMap = () => {
         scrollwheel: false
       });
       fillBreadcrumb();
+      fetchRestaurantReviews();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
     }
   });
@@ -111,10 +112,90 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
   }
 }
 
+function fetchAllRestaurantReviews() {
+
+  let reviewsXHR = new XMLHttpRequest();
+  let reviewsURL = DBHelper.REVIEWS_URL;
+  reviewsXHR.open('GET', reviewsURL);
+  var outputJSONObject = [];
+
+  reviewsXHR.onload = function() {
+        if (reviewsXHR.status === 200) {
+
+          var reviews = JSON.parse(reviewsXHR.responseText);
+
+          for (let i = 0; i < reviews.length; i++) {
+            let jsonObject = {"id" : reviews[i].id,
+                            "restaurant_id" : reviews[i].restaurant_id,
+                            "name" : reviews[i].name,
+                            "rating" : reviews[i].rating,
+                            "createdAt" : reviews[i].createdAt,
+                            "updatedAt" : reviews[i].updatedAt,
+                            "comments" : reviews[i].comments};
+            if (i === 0)
+            {
+                  outputJSONObject[i] = jsonObject;
+            }
+            outputJSONObject.push(jsonObject);
+          }
+        }
+    }
+    reviewsXHR.onerror = function(error) {
+        console.log('Reviews fetching error occured : ', error);
+    }
+    reviewsXHR.send();
+    return outputJSONObject;
+}
+
+//Fetch all reviews sbmited on a restaurant
+function fetchRestaurantReviews(restaurant = self.restaurant) {
+  //TODO: Refactor response. Check behaviour in case of an array
+  let restaurantReviewsURL = getRestaurantReviewsURL();
+  let reviewsXHR = new XMLHttpRequest();
+  var restaurantReviews = [];
+
+  reviewsXHR.open('GET', restaurantReviewsURL);
+  reviewsXHR.onload = function() {
+    //Check if an OK response is sent from server
+    if (reviewsXHR.status === 200) {
+      //Store data to JSON object(s)
+      let reviews = JSON.parse(reviewsXHR.responseText);
+        if (reviews)
+        {
+          restaurantReviews.push({
+              "id" : reviews.id,
+              "restaurant_id" : reviews.restaurant_id,
+              "name" : reviews.name,
+              "createdAt" : reviews.createdAt,
+              "updatedAt" : reviews.updatedAt,
+              "rating" : reviews.rating,
+              "comments" : reviews.comments
+          });
+        }
+      }
+  };
+  reviewsXHR.send();
+  return restaurantReviews;
+}
+//get restaurant id
+function getRestuarantId(restaurant = self.restaurant)
+{
+  return restaurant.id;
+}
+//Get API restaurant reviews url
+function getRestaurantReviewsURL(restaurant = self.restaurant)
+{
+  const port = 1337;
+  const restaurantID = getRestuarantId();
+  return 'http://localhost:' + port +'/reviews/' + restaurantID;
+}
+
+let reviewsArray = fetchAllRestaurantReviews();
 /**
  * Create all reviews HTML and add them to the webpage.
  */
-fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+//fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+fillReviewsHTML = (reviews = reviewsArray) => {
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
   const addReviewButton = document.createElement('button');
@@ -122,6 +203,7 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   title.innerHTML = 'Reviews';
   title.setAttribute('tabindex', '0');
   container.appendChild(title);
+
   addReviewButton.setAttribute('id', 'add-reviews');
   addReviewButton.setAttribute('onclick', 'addReview()');
   addReviewButton.innerHTML = 'Add a review';
@@ -147,7 +229,6 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
  * Create review HTML and add it to the webpage.
  */
 createReviewHTML = (review) => {
-
   const li = document.createElement('li');
   const name = document.createElement('p');
   name.className = 'reviewer-name';
@@ -157,12 +238,13 @@ createReviewHTML = (review) => {
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  //date.innerHTML = review.date;
+  date.innerHTML = review.createdAt;
   date.className = 'review-date';
   date.setAttribute('tabindex', '0');
-  date.setAttribute('aria-label', 'review date, ' + review.date);
+  // date.setAttribute('aria-label', 'review date, ' + review.date);
+  date.setAttribute('aria-label', 'review-date' + review.createdAt);
   li.appendChild(date);
-  //name.appendChild(date);
 
   const rating = document.createElement('p');
   rating.innerHTML = `RATING: ${review.rating}`;
