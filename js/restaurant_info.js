@@ -1,10 +1,11 @@
 let restaurant;
 var map;
+var reviews = [];
 
 if (navigator.serviceWorker) {
-  navigator.serviceWorker.register('/sw.js').then(function(res){
+  navigator.serviceWorker.register('/sw.js').then(function (res) {
     console.log('Restaurant info success: ' + res);
-  }).catch(function(err){
+  }).catch(function (err) {
     console.log('Restaurants info failure: ' + err);
   });
 }
@@ -23,7 +24,17 @@ window.initMap = () => {
         scrollwheel: false
       });
       fillBreadcrumb();
-      fetchRestaurantReviews();
+      // fetchRestaurantReviews();
+      let restaurantReviewsPromise = fetchRestaurantReviews();
+      restaurantReviewsPromise.then(function(reviews) {
+        fillReviewsHTML(reviews);
+        reviews.forEach(function(review) {
+          //console.log(review);
+          self.reviews.push(review);
+        });
+      }).catch(function(error) {
+        console.log(error);
+      });
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
     }
   });
@@ -84,7 +95,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
     fillRestaurantHoursHTML();
   }
   // fill reviews
-  fillReviewsHTML();
+  //fillReviewsHTML();
 }
 
 /**
@@ -119,83 +130,94 @@ function fetchAllRestaurantReviews() {
   reviewsXHR.open('GET', reviewsURL);
   var outputJSONObject = [];
 
-  reviewsXHR.onload = function() {
-        if (reviewsXHR.status === 200) {
+  reviewsXHR.onload = function () {
+    if (reviewsXHR.status === 200) {
 
-          var reviews = JSON.parse(reviewsXHR.responseText);
+      var reviews = JSON.parse(reviewsXHR.responseText);
+      reviews.forEach(function (review) {
+        let jsonObject = {
+          "id": review.id,
+          "restaurant_id": review.restaurant_id,
+          "name": review.name,
+          "rating": review.rating,
+          "createdAt": review.createdAt,
+          "updatedAt": review.updatedAt,
+          "comments": review.comments
+        };
+        outputJSONObject.push(jsonObject);
 
-          for (let i = 0; i < reviews.length; i++) {
-            let jsonObject = {"id" : reviews[i].id,
-                            "restaurant_id" : reviews[i].restaurant_id,
-                            "name" : reviews[i].name,
-                            "rating" : reviews[i].rating,
-                            "createdAt" : reviews[i].createdAt,
-                            "updatedAt" : reviews[i].updatedAt,
-                            "comments" : reviews[i].comments};
-            if (i === 0)
-            {
-                  outputJSONObject[i] = jsonObject;
-            }
-            outputJSONObject.push(jsonObject);
-          }
-        }
+      });
     }
-    reviewsXHR.onerror = function(error) {
-        console.log('Reviews fetching error occured : ', error);
-    }
-    reviewsXHR.send();
-    return outputJSONObject;
+  }
+  reviewsXHR.onerror = function (error) {
+    console.log('Reviews fetching error occured : ', error);
+  }
+  reviewsXHR.send();
+  return outputJSONObject;
 }
+
 
 //Fetch all reviews sbmited on a restaurant
 function fetchRestaurantReviews(restaurant = self.restaurant) {
   //TODO: Refactor response. Check behaviour in case of an array
-  let restaurantReviewsURL = getRestaurantReviewsURL();
-  let reviewsXHR = new XMLHttpRequest();
-  var restaurantReviews = [];
+  return new Promise(function (resolve, reject) {
 
-  reviewsXHR.open('GET', restaurantReviewsURL);
-  reviewsXHR.onload = function() {
-    //Check if an OK response is sent from server
-    if (reviewsXHR.status === 200) {
-      //Store data to JSON object(s)
-      let reviews = JSON.parse(reviewsXHR.responseText);
-        if (reviews)
-        {
-          restaurantReviews.push({
-              "id" : reviews.id,
-              "restaurant_id" : reviews.restaurant_id,
-              "name" : reviews.name,
-              "createdAt" : reviews.createdAt,
-              "updatedAt" : reviews.updatedAt,
-              "rating" : reviews.rating,
-              "comments" : reviews.comments
-          });
+    let restaurantReviewsURL = getRestaurantReviewsURL();
+    let reviewsXHR = new XMLHttpRequest();
+    var restaurantReviewsArray = [];
+
+    reviewsXHR.open('GET', restaurantReviewsURL);
+    reviewsXHR.onload = function () {
+      //Check if an OK response is sent from server
+      if (reviewsXHR.status === 200) {
+        //Store data to JSON object(s)
+        let reviews = JSON.parse(reviewsXHR.responseText);
+        if (reviews) {
+          let reviewJsonObject = {
+            "id": reviews.id,
+            "restaurant_id": reviews.restaurant_id,
+            "name": reviews.name,
+            "createdAt": reviews.createdAt,
+            "updatedAt": reviews.updatedAt,
+            "rating": reviews.rating,
+            "comments": reviews.comments
+          };
+
+          restaurantReviewsArray.push(reviewJsonObject);
+          // self.reviews.push(reviewJsonObject);
+          resolve(restaurantReviewsArray);
+
+          // return restaurantReviews;
         }
       }
-  };
-  reviewsXHR.send();
-  return restaurantReviews;
+    };
+    reviewsXHR.onerror = reject;
+    // reviewsXHR.onerror = function (err) {
+    //   console.log('Network error', err);
+    // };
+    reviewsXHR.send();
+  });
 }
+
 //get restaurant id
-function getRestuarantId(restaurant = self.restaurant)
-{
+function getRestaurantId(restaurant = self.restaurant) {
   return restaurant.id;
 }
 //Get API restaurant reviews url
-function getRestaurantReviewsURL(restaurant = self.restaurant)
-{
+function getRestaurantReviewsURL(restaurant = self.restaurant) {
   const port = 1337;
-  const restaurantID = getRestuarantId();
-  return 'http://localhost:' + port +'/reviews/' + restaurantID;
+  const restaurantID = getRestaurantId();
+  return 'http://localhost:' + port + '/reviews/' + restaurantID;
 }
 
 let reviewsArray = fetchAllRestaurantReviews();
+
 /**
  * Create all reviews HTML and add them to the webpage.
  */
 //fillReviewsHTML = (reviews = self.restaurant.reviews) => {
-fillReviewsHTML = (reviews = reviewsArray) => {
+// fillReviewsHTML = (reviews = reviewsArray) => {
+fillReviewsHTML = (reviews) => {
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
   const addReviewButton = document.createElement('button');
@@ -266,7 +288,7 @@ createReviewHTML = (review) => {
 /**
  * Add restaurant name to the breadcrumb navigation menu
  */
-fillBreadcrumb = (restaurant=self.restaurant) => {
+fillBreadcrumb = (restaurant = self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
   li.innerHTML = restaurant.name;
