@@ -26,13 +26,13 @@ window.initMap = () => {
       fillBreadcrumb();
       // fetchRestaurantReviews();
       let restaurantReviewsPromise = fetchRestaurantReviews();
-      restaurantReviewsPromise.then(function(reviews) {
+      restaurantReviewsPromise.then(function (reviews) {
         fillReviewsHTML(reviews);
-        reviews.forEach(function(review) {
+        reviews.forEach(function (review) {
           //console.log(review);
           self.reviews.push(review);
         });
-      }).catch(function(error) {
+      }).catch(function (error) {
         console.log(error);
       });
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
@@ -172,29 +172,43 @@ function fetchRestaurantReviews(restaurant = self.restaurant) {
       if (reviewsXHR.status === 200) {
         //Store data to JSON object(s)
         let reviews = JSON.parse(reviewsXHR.responseText);
-        if (reviews) {
-          let reviewJsonObject = {
-            "id": reviews.id,
-            "restaurant_id": reviews.restaurant_id,
-            "name": reviews.name,
-            "createdAt": reviews.createdAt,
-            "updatedAt": reviews.updatedAt,
-            "rating": reviews.rating,
-            "comments": reviews.comments
-          };
+        if (reviews)
+        {
+          if (typeof reviews === 'object')
+          {
+            let reviewJsonObject = {
+                         "id" : reviews.id,
+              "restaurant_id" : reviews.restaurant_id,
+                       "name" : reviews.name,
+                  "createdAt" : reviews.createdAt,
+                  "updatedAt" : reviews.updatedAt,
+                     "rating" : reviews.rating,
+                   "comments" : reviews.comments
+            };
 
-          restaurantReviewsArray.push(reviewJsonObject);
-          // self.reviews.push(reviewJsonObject);
+            restaurantReviewsArray.push(reviewJsonObject);
+          }
+          else if (typeof reviews === 'object' &&
+            reviews.constructor === Array)
+            {
+            reviews.forEach(function (review) {
+              let reviewJSONObject = {
+                           "id" : review.id,
+                "restaurant_id" : review.restaurant_id,
+                         "name" : review.name,
+                    "createdAt" : review.createdAt,
+                    "updatedAt" : review.updatedAt,
+                       "rating" : review.rating,
+                     "comments" : review.comments
+              };
+              restaurantReviewsArray.push(reviewJSONObject);
+            });
+          }
           resolve(restaurantReviewsArray);
-
-          // return restaurantReviews;
         }
       }
     };
     reviewsXHR.onerror = reject;
-    // reviewsXHR.onerror = function (err) {
-    //   console.log('Network error', err);
-    // };
     reviewsXHR.send();
   });
 }
