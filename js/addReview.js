@@ -49,17 +49,43 @@ function getSliderValue() {
 
 function createFormHTML() {
     //with name tag form fields are added to the URL
-    const formHTML = 'Name <br>'
-        + '<input type =' + 'text' + ' name=' + 'reviewer-name' + ' id=' + 'reviewer-name' + '>' +
+    const formHTML = //'Name <br>'
+        // + '<input type =' + 'text' + ' name=' + 'reviewer-name' + ' id=' + 'reviewer-name' + '>' +
+        // '<br>'
+        // + 'Rating <br>'
+        // + '<input type=' + 'range ' + 'min=' + '1 ' + 'max=' + '10' + ' value=' + '5' + ' name=' + 'rating-slider' +
+        // ' step=' + '1' + '>'
+        // + '<p id=' + 'rating-label' + '></p>'
+        // + 'Comment <br>'
+        // + '<textarea rows=' + '10' + ' cols=' + '50' + ' name=' + 'comment-section' +  ' id =' + 'comment-section' + '></textarea>'
+        // + '<br>'
+        // + '<input type=' + ' submit' + '>';
+
         '<br>'
-        + 'Rating <br>'
-        + '<input type=' + 'range ' + 'min=' + '1 ' + 'max=' + '10' + ' value=' + '5' + ' name=' + 'rating-slider' +
-        ' step=' + '1' + '>'
-        + '<p id=' + 'rating-label' + '></p>'
-        + 'Comment <br>'
-        + '<textarea rows=' + '10' + ' cols=' + '50' + ' name=' + 'comment-section' +  ' id =' + 'comment-section' + '></textarea>'
+        + '<fieldset>'
+
+        + '<label>Name'
+        + '<input type =' + 'text' + ' name=' + 'reviewer-name' + ' id=' + 'reviewer-name' + '>'
+        + '</label>'
+
         + '<br>'
-        + '<input type=' + ' submit' + '>';
+        + '<label>Rating'
+        + '<input type=' + 'range ' + 'min=' + '1 ' + 'max=' + '10' + ' value=' + '5' + ' name='
+        + 'rating-slider' + ' step=' + '1' + '>'
+        + '<p id=' + 'rating-label' + '></p>'
+        + '</label>'
+
+        + '<label>Comment'
+        + '<br>'
+        + '<textarea rows=' + '10' + ' cols=' + '50' + ' name=' + 'comment-section' +  ' id =' + 'comment-section' + '></textarea>'
+        + '</label>'
+
+        + '<br>'
+        + '<input type=' + ' submit' + '>'
+
+        + '</fieldset>';
+
+
 
     return formHTML;
 }
