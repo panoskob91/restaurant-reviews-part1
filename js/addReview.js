@@ -9,13 +9,13 @@ function addReview() {
     if (firstTime) {
         addReviewForm.setAttribute('id', 'add-review-form');
         addReviewForm.setAttribute('onsubmit', 'handleSubmit()');
-        //addReviewForm.setAttribute('action', '/restaurant.html?id=1');
+        addReviewForm.setAttribute('action', '');
         addReviewForm.setAttribute('display', 'block');
         addReviewForm.innerHTML = createFormHTML();
         container.appendChild(addReviewForm);
+        console.log(addReviewForm);
 
         getSliderValue();
-        fetchRestaurantReviews();
 
         firstTime = false;
         showItem = false;
@@ -36,7 +36,8 @@ function addReview() {
 }
 
 function getSliderValue() {
-    const slider = document.getElementsByName('rating-slider')[0];
+    // const slider = document.getElementsByName('rating-slider')[0];
+    const slider = document.getElementById('rating-slider');
     const ratingLabel = document.getElementById('rating-label');
     var sliderValue = slider.value;
     slider.oninput = function () {
@@ -46,36 +47,28 @@ function getSliderValue() {
 }
 
 function createFormHTML() {
+    //with name tag form fields are added to the URL
     const formHTML = 'Name <br>'
-        + '<input type =' + 'text' + ' name=' + 'reviewer-name' + '>' +
+        + '<input type =' + 'text' + ' id=' + 'reviewer-name' + '>' +
         '<br>'
         + 'Rating <br>'
-        + '<input type=' + 'range ' + 'min=' + '1 ' + 'max=' + '10' + ' value=' + '5' + ' name=' + 'rating-slider' +
+        + '<input type=' + 'range ' + 'min=' + '1 ' + 'max=' + '10' + ' value=' + '5' + ' id=' + 'rating-slider' +
         ' step=' + '1' + '>'
         + '<p id=' + 'rating-label' + '></p>'
         + 'Comment <br>'
-        + '<textarea rows=' + '10' + ' cols=' + '50' + ' name=' + 'comment-section' + '></textarea>'
+        + '<textarea rows=' + '10' + ' cols=' + '50' + ' id=' + 'comment-section' + '></textarea>'
         + '<br>'
         + '<input type=' + ' submit' + '>';
 
     return formHTML;
 }
 
-function hadndleSubmit() {
+function handleSubmit() {
+
     const name = document.getElementById('reviewer-name');
     const restaurantRating = document.getElementById('rating-slider');
     const commentSection = document.getElementById('comment-section');
 
-    if (name !== null &&
-        restaurantRating.value !== null &&
-        commentSection !== null) {
-        console.log('hi');
-    }
-    else {
-        if (name == null) {
-            name.setAttribute('background-color', 'red');
-        }
-    }
 
     console.log('Correct');
 }
