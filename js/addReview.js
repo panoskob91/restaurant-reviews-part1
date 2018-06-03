@@ -9,11 +9,12 @@ function addReview() {
     if (firstTime) {
         addReviewForm.setAttribute('id', 'add-review-form');
         addReviewForm.setAttribute('onsubmit', 'handleSubmit()');
-        addReviewForm.setAttribute('action', '');
-        //addReviewForm.setAttribute('method', 'post');
+        addReviewForm.setAttribute('action', 'http://localhost:1337/reviews');
+        addReviewForm.setAttribute('method', 'post');
         addReviewForm.setAttribute('display', 'block');
         addReviewForm.innerHTML = createFormHTML();
         container.appendChild(addReviewForm);
+
         console.log(addReviewForm);
 
         getSliderValue();
@@ -96,13 +97,17 @@ function handleSubmit() {
     // const restaurantRating = document.getElementById('rating-slider');
     // const commentSection = document.getElementById('comment-section');
 
-    validateForm();
+    let validatedForm = validatedForm();
+    // console.log(validatedForm);
+    let restaurantId = getRestaurantID();
+    console.log(restaurantId);
 
     console.log('Correct');
 }
 
 /* ================================================================================================ */
 
+//Validates input form
 function validateForm() {
     var name = document.forms['add-review-form']['reviewer-name'].value;
     var comment = document.forms['add-review-form']['comment-section'].value;
@@ -119,10 +124,9 @@ function validateForm() {
     return true;
 }
 
-function launchPopup(firstTime) {
-    if (firstTime === true) {
-        const popupWindow = document.createElement('div');
-        popupWindow.setAttribute('class', 'modal-window');
-    }
+//Extracts restaurant id from restaurant object
+function getRestaurantID()
+{
+    let restaurant = self.restaurant;
+    return restaurant.id;
 }
-
