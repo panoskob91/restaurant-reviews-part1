@@ -2,15 +2,19 @@ var firstTime = true;
 /* =================================== Create and handle submition form ========================= */
 const container = document.getElementById('reviews-container');
 const addReviewForm = document.createElement('form');
+addReviewForm.addEventListener('submit', handleSubmit);
 var showItem = true;
 
 function addReview() {
 
     if (firstTime) {
+        let restaurantId = getRestaurantID();
         addReviewForm.setAttribute('id', 'add-review-form');
-        addReviewForm.setAttribute('onsubmit', 'handleSubmit()');
+        //addReviewForm.setAttribute('onsubmit', 'handleSubmit()');
         //addReviewForm.setAttribute('action', 'http://localhost:1337/reviews');
-        // addReviewForm.setAttribute('method', 'post');
+        let restaurantURL = '/restaurant.html?id=' + restaurantId;
+        //addReviewForm.setAttribute('action', restaurantURL);
+        //addReviewForm.setAttribute('method', 'post');
         addReviewForm.setAttribute('display', 'block');
         addReviewForm.innerHTML = createFormHTML();
         container.appendChild(addReviewForm);
@@ -67,23 +71,23 @@ function createFormHTML() {
         + '<fieldset>'
 
         + '<label>Name'
-        + '<input type =' + 'text' + ' id=' + 'reviewer-name' + ' id=' + 'reviewer-name' + ' required' +'>'
+        + '<input type =' + 'text' + ' id=' + 'reviewer-name' + ' name=' + 'reviewer-name' + ' required' +'>'
         + '</label>'
 
         + '<br>'
         + '<label>Rating'
         + '<input type=' + 'range ' + 'min=' + '1 ' + 'max=' + '10' + ' value=' + '5' + ' id='
-        + 'rating-slider' + ' step=' + '1' + ' required' + '>'
+        + 'rating-slider' + ' name=' + ' rating-slider' + ' step=' + '1' + ' required' + '>'
         + '<p id=' + 'rating-label' + '></p>'
         + '</label>'
 
         + '<label>Comment'
         + '<br>'
-        + '<textarea rows=' + '10' + ' cols=' + '50' + ' id=' + 'comment-section' +  ' id =' + 'comment-section' + ' required' + '></textarea>'
+        + '<textarea rows=' + '10' + ' cols=' + '50' + ' id=' + 'comment-section' +  ' name=' + 'comment-section' + ' required' + '></textarea>'
         + '</label>'
 
         + '<br>'
-        + '<input type=' + ' submit' + '>'
+        + '<input type=' + ' submit' + ' value=' + ' Submit' + '>'
 
         + '</fieldset>';
 
@@ -92,13 +96,13 @@ function createFormHTML() {
     return formHTML;
 }
 
-function handleSubmit() {
-
-    // const name = document.getElementById('reviewer-name');
-    // const restaurantRating = document.getElementById('rating-slider');
-    // const commentSection = document.getElementById('comment-section');
-
-    validatedForm();
+function handleSubmit(e) {
+    e.preventDefault();
+    const addReviewForm = document.getElementById('add-review-form');
+    const name = document.getElementById('reviewer-name');
+    const restaurantRating = document.getElementById('rating-slider');
+    const ratingLabel = document.getElementById('rating-label');
+    const commentSection = document.getElementById('comment-section');
 
     let restaurantId = getRestaurantID();
     console.log(restaurantId);
@@ -109,6 +113,7 @@ function handleSubmit() {
 /* ================================================================================================ */
 
 //Validates input form
+//TODO: Consider Removing this function
 function validateForm() {
     var name = document.forms['add-review-form']['reviewer-name'].value;
     var comment = document.forms['add-review-form']['comment-section'].value;
@@ -135,5 +140,6 @@ function validateForm() {
 function getRestaurantID()
 {
     let restaurant = self.restaurant;
+    console.log(restaurant.id);
     return restaurant.id;
 }
