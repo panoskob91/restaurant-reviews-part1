@@ -28,10 +28,9 @@ window.initMap = () => {
       let restaurantReviewsPromise = fetchRestaurantReviews();
       restaurantReviewsPromise.then(function (reviews) {
         fillReviewsHTML(reviews);
-        reviews.forEach(function (review) {
-          //console.log(review);
-          self.reviews.push(review);
-        });
+        // reviews.forEach(function (review) {
+        //   self.reviews.push(review);
+        // });
       }).catch(function (error) {
         console.log(error);
       });
@@ -197,9 +196,9 @@ function fetchRestaurantReviews(restaurant = self.restaurant) {
               if (review.restaurant_id === restaurant.id) {
                 console.log(reviewJSON);
                 restaurantReviewsArray.push(reviewJSON);
+                self.reviews.push(reviewJSON);
               }
             });
-
             // restaurantReviewsArray.push(reviewJsonObject);
             // }
             // else if (typeof reviews === 'object' &&

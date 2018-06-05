@@ -18,21 +18,19 @@ function addReview() {
         container.appendChild(addReviewForm);
 
         console.log(addReviewForm);
+        // console.log('reviews = ', self.reviews);
 
         getSliderValue();
 
         firstTime = false;
         showItem = false;
     }
-    else
-    {
-        if (showItem)
-        {
+    else {
+        if (showItem) {
             addReviewForm.removeAttribute('class', 'form-hidden');
             showItem = false;
         }
-        else
-        {
+        else {
             addReviewForm.setAttribute('class', 'form-hidden');
             showItem = true;
         }
@@ -59,7 +57,7 @@ function createFormHTML() {
         + '<fieldset>'
 
         + '<label>Name'
-        + '<input type =' + 'text' + ' id=' + 'reviewer-name' + ' name=' + 'reviewer-name' + ' required' +'>'
+        + '<input type =' + 'text' + ' id=' + 'reviewer-name' + ' name=' + 'reviewer-name' + ' required' + '>'
         + '</label>'
 
         + '<br>'
@@ -71,7 +69,7 @@ function createFormHTML() {
 
         + '<label>Comment'
         + '<br>'
-        + '<textarea rows=' + '10' + ' cols=' + '50' + ' id=' + 'comment-section' +  ' name=' + 'comment-section' + ' required' + '></textarea>'
+        + '<textarea rows=' + '10' + ' cols=' + '50' + ' id=' + 'comment-section' + ' name=' + 'comment-section' + ' required' + '></textarea>'
         + '</label>'
 
         + '<br>'
@@ -86,13 +84,12 @@ function createFormHTML() {
 
 function handleSubmit(e) {
     e.preventDefault();
+    let proceedToPost = true;
     const addReviewForm = document.getElementById('add-review-form');
     const name = document.getElementById('reviewer-name');
     const restaurantRating = document.getElementById('rating-slider');
     const ratingLabel = document.getElementById('rating-label');
     const commentSection = document.getElementById('comment-section');
-
-    console.log(ratingLabel);
 
     let restaurantId = getRestaurantID();
     let reviewerName = name.value;
@@ -105,27 +102,38 @@ function handleSubmit(e) {
     postedData.rating = rating;
     postedData.comments = restaurantComments;
     let jsonData = JSON.stringify(postedData);
+    let restaurantReviews = self.reviews;
+    //Check if entry exists, in order to avoid duplicate entries
+    restaurantReviews.forEach(function(review) {
+        console.log('review = ', review);
+        if (review.comments === postedData.comments &&
+            review.name === postedData.name &&
+            review.rating === postedData.rating &&
+            review.restaurant_id === postedData.restaurant_id) {
 
-    let url = 'http://localhost:1337/reviews/';
-    let postReviewXHR = new XMLHttpRequest();
-    postReviewXHR.open('POST', url);
-    postReviewXHR.setRequestHeader('Content-type','application/json; charset=utf-8');
-    console.log(postReviewXHR);
-    postReviewXHR.onload = function() {
-        //Needs to provide following parameters
-        // {
-        //     "restaurant_id": <restaurant_id>,
-        //     "name": <reviewer_name>,
-        //     "rating": <rating>,
-        //     "comments": <comment_text>
-        // }
-        console.log(postReviewXHR.responseText);
-
+                proceedToPost = false;
+        }
+    });
+    //Boolean proccedToPost is used to avoid adding duplicate data
+    if (proceedToPost)
+    {
+        let url = 'http://localhost:1337/reviews/';
+        let postReviewXHR = new XMLHttpRequest();
+        postReviewXHR.open('POST', url);
+        postReviewXHR.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+        console.log(postReviewXHR);
+        postReviewXHR.onload = function () {
+            //Needs to provide following parameters
+            // {
+            //     "restaurant_id": <restaurant_id>,
+            //     "name": <reviewer_name>,
+            //     "rating": <rating>,
+            //     "comments": <comment_text>
+            // }
     }
-    postReviewXHR.send(jsonData);
+        postReviewXHR.send(jsonData);
+    }
 
-
-    console.log('Correct');
 }
 
 /* ================================================================================================ */
@@ -136,18 +144,15 @@ function validateForm() {
     var name = document.forms['add-review-form']['reviewer-name'].value;
     var comment = document.forms['add-review-form']['comment-section'].value;
     var ratingSlider = document.forms['add-review-form']['rating-label'].value;
-    if (name === "")
-    {
+    if (name === "") {
         alert('Name must be filled out');
         return false;
     }
-    if (comment === '')
-    {
+    if (comment === '') {
         alert('Comment must be filled out');
         return false;
     }
-    if (ratingSlider == '')
-    {
+    if (ratingSlider == '') {
         alert('Rating must be filled out');
         return false;
     }
@@ -155,8 +160,7 @@ function validateForm() {
 }
 
 //Extracts restaurant id from restaurant object
-function getRestaurantID()
-{
+function getRestaurantID() {
     let restaurant = self.restaurant;
     return restaurant.id;
 }
