@@ -162,7 +162,8 @@ function fetchRestaurantReviews(restaurant = self.restaurant) {
   //TODO: Refactor response. Check behaviour in case of an array
   return new Promise(function (resolve, reject) {
 
-    let restaurantReviewsURL = getRestaurantReviewsURL();
+    // let restaurantReviewsURL = getRestaurantReviewsURL();
+    let restaurantReviewsURL = 'http://localhost:1337/reviews/';;
     let reviewsXHR = new XMLHttpRequest();
     var restaurantReviewsArray = [];
 
@@ -172,38 +173,51 @@ function fetchRestaurantReviews(restaurant = self.restaurant) {
       if (reviewsXHR.status === 200) {
         //Store data to JSON object(s)
         let reviews = JSON.parse(reviewsXHR.responseText);
-        if (reviews)
-        {
-          if (typeof reviews === 'object')
-          {
-            let reviewJsonObject = {
-                         "id" : reviews.id,
-              "restaurant_id" : reviews.restaurant_id,
-                       "name" : reviews.name,
-                  "createdAt" : reviews.createdAt,
-                  "updatedAt" : reviews.updatedAt,
-                     "rating" : reviews.rating,
-                   "comments" : reviews.comments
-            };
-
-            restaurantReviewsArray.push(reviewJsonObject);
-          }
-          else if (typeof reviews === 'object' &&
-            reviews.constructor === Array)
-            {
+        if (reviews) {
+          // if (typeof reviews === 'object') {
+            // let reviewJsonObject = {
+            //   "id": reviews.id,
+            //   "restaurant_id": reviews.restaurant_id,
+            //   "name": reviews.name,
+            //   "createdAt": reviews.createdAt,
+            //   "updatedAt": reviews.updatedAt,
+            //   "rating": reviews.rating,
+            //   "comments": reviews.comments
+            // };
             reviews.forEach(function (review) {
-              let reviewJSONObject = {
-                           "id" : review.id,
-                "restaurant_id" : review.restaurant_id,
-                         "name" : review.name,
-                    "createdAt" : review.createdAt,
-                    "updatedAt" : review.updatedAt,
-                       "rating" : review.rating,
-                     "comments" : review.comments
+              let reviewJSON = {
+                "id": review.id,
+                "restaurant_id": review.restaurant_id,
+                "name": review.name,
+                "createdAt": review.createdAt,
+                "updatedAt": review.updatedAt,
+                "rating": review.rating,
+                "comments": review.comments
               };
-              restaurantReviewsArray.push(reviewJSONObject);
+              if (review.restaurant_id === restaurant.id) {
+                console.log(reviewJSON);
+                restaurantReviewsArray.push(reviewJSON);
+              }
             });
-          }
+
+            // restaurantReviewsArray.push(reviewJsonObject);
+            // }
+            // else if (typeof reviews === 'object' &&
+            //   reviews.constructor === Array)
+            //   {
+            //   reviews.forEach(function (review) {
+            //     let reviewJSONObject = {
+            //                  "id" : review.id,
+            //       "restaurant_id" : review.restaurant_id,
+            //                "name" : review.name,
+            //           "createdAt" : review.createdAt,
+            //           "updatedAt" : review.updatedAt,
+            //              "rating" : review.rating,
+            //            "comments" : review.comments
+            //     };
+            //     restaurantReviewsArray.push(reviewJSONObject);
+            //   });
+          // }
           resolve(restaurantReviewsArray);
         }
       }

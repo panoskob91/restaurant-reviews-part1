@@ -108,10 +108,9 @@ function handleSubmit(e) {
 
     let url = 'http://localhost:1337/reviews/';
     let postReviewXHR = new XMLHttpRequest();
-    postReviewXHR.setRequestHeader('Content-type','application/json; charset=utf-8');
-
-    /*
     postReviewXHR.open('POST', url);
+    postReviewXHR.setRequestHeader('Content-type','application/json; charset=utf-8');
+    console.log(postReviewXHR);
     postReviewXHR.onload = function() {
         //Needs to provide following parameters
         // {
@@ -120,10 +119,12 @@ function handleSubmit(e) {
         //     "rating": <rating>,
         //     "comments": <comment_text>
         // }
-    }
+        console.log(postReviewXHR.responseText);
 
-    postReviewXHR.send();
-    */
+    }
+    postReviewXHR.send(jsonData);
+
+
     console.log('Correct');
 }
 
