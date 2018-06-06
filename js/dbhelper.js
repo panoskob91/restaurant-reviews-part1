@@ -33,8 +33,9 @@ class DBHelper {
       if (XHR.status === 200) {
         const jsonObject = JSON.parse(XHR.responseText);
         const restauants = jsonObject;
-
+        //Handle IndexedDB
         var openRequest = indexedDB.open('restaurants', 1);
+
         openRequest.onupgradeneeded = function(e){
           var db = e.target.result;
           if(!db.objectStoreNames.contains('restaurant')){
@@ -54,10 +55,8 @@ class DBHelper {
         }
         callback(null, restauants);
       }else{
-
         const error = 'Request failed. Returned status of ' + XHR.status;
         callback(error, null);
-
       }
 
     };

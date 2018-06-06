@@ -1,6 +1,12 @@
 let restaurant;
 var map;
 var reviews = [];
+var idbIsSupported = true;
+
+if (!window.indexedDB)
+{
+  idbIsSupported = false;
+}
 
 if (navigator.serviceWorker) {
   navigator.serviceWorker.register('/sw.js').then(function (res) {
@@ -28,9 +34,6 @@ window.initMap = () => {
       let restaurantReviewsPromise = fetchRestaurantReviews();
       restaurantReviewsPromise.then(function (reviews) {
         fillReviewsHTML(reviews);
-        // reviews.forEach(function (review) {
-        //   self.reviews.push(review);
-        // });
       }).catch(function (error) {
         console.log(error);
       });
@@ -194,11 +197,16 @@ function fetchRestaurantReviews(restaurant = self.restaurant) {
                 "comments": review.comments
               };
               if (review.restaurant_id === restaurant.id) {
-                console.log(reviewJSON);
+                // console.log(reviewJSON.name);
                 restaurantReviewsArray.push(reviewJSON);
                 self.reviews.push(reviewJSON);
               }
+              if (self.idbIsSupported)
+              {
+                storeReviewsInIndexedDb(review);
+              }
             });
+
             // restaurantReviewsArray.push(reviewJsonObject);
             // }
             // else if (typeof reviews === 'object' &&
@@ -217,6 +225,7 @@ function fetchRestaurantReviews(restaurant = self.restaurant) {
             //     restaurantReviewsArray.push(reviewJSONObject);
             //   });
           // }
+
           resolve(restaurantReviewsArray);
         }
       }
@@ -224,6 +233,26 @@ function fetchRestaurantReviews(restaurant = self.restaurant) {
     reviewsXHR.onerror = reject;
     reviewsXHR.send();
   });
+}
+
+function storeReviewsInIndexedDb(review) {
+  var openRequest = indexedDB.open('reviews', 1);
+        openRequest.onupgradeneeded = function(e){
+          var db = e.target.result;
+          if(!db.objectStoreNames.contains('reviews')){
+            var objectStore = db.createObjectStore('reviews', {keypath : 'name'});
+            var index = objectStore.createIndex('updatedAt', 'updatedAt');
+          }
+        }
+        openRequest.onsuccess = function(e){
+          var db = e.target.result;
+          var transaction = db.transaction('reviews', 'readwrite');
+          var store = transaction.objectStore('reviews');
+          store.put(review, review.id);
+        }
+        openRequest.onerror = function(event) {
+          console.log(event.target.errorCode);
+        }
 }
 
 //get restaurant id

@@ -93,7 +93,8 @@ self.addEventListener('fetch', function(event) {
         }).catch(function(error) {
             console.log('Cache fetching error: ' + error);
                 return caches.match('index.html').then(function(){
-                    readDB();
+                    readRestaurantsFromIDB();
+                    readReviewsFromIDB();
                 });
 
         })
@@ -102,7 +103,7 @@ self.addEventListener('fetch', function(event) {
 
 });
 //Function used to read data from indexed DB
-function readDB() {
+function readRestaurantsFromIDB() {
     var request = indexedDB.open('restaurants');
     request.onsuccess = function(e){
         var db = e.target.result;
@@ -111,3 +112,13 @@ function readDB() {
         return store.getAll();
     }
   }
+
+function readReviewsFromIDB() {
+    var request = indexedDB.open('reviews');
+    request.onsuccess = function(e){
+        var db = e.target.result;
+        var transaction = db.transaction(['reviews'], 'readonly');
+        var store = transaction.objectStore('reviews');
+        return store.getAll();
+    }
+}
