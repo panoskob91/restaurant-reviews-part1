@@ -1,6 +1,7 @@
 let restaurant;
 var map;
 var reviews = [];
+//Ensure that IndexedDb will be used only if it is supported by the browser
 var idbIsSupported = true;
 
 if (!window.indexedDB)
@@ -249,6 +250,20 @@ function storeReviewsInIndexedDb(review) {
           var transaction = db.transaction('reviews', 'readwrite');
           var store = transaction.objectStore('reviews');
           store.put(review, review.id);
+          /*//Setup code to keep 50 latest posts
+          store.index('updatedAt').openCursor(null, 'prev')
+          .then(function(cursor) {
+            return advance(50);
+          })
+          .then(function deleteRest(cursor) {
+            if (!cursor)
+            {
+              return;
+            }
+            cursor.delete();
+            return cursor.continue().then(deleteRest);
+          });
+          */
         }
         openRequest.onerror = function(event) {
           console.log(event.target.errorCode);
