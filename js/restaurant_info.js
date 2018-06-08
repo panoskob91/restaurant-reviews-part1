@@ -263,7 +263,12 @@ function storeReviewsInIndexedDb(review) {
       return cursor.continue().then(deleteRest);
     });
     */
+    transaction.oncomplete = function () {
+      db.close();
+    }
   }
+
+
   openRequest.onerror = function (event) {
     console.log(event.target.errorCode);
   }
@@ -276,18 +281,32 @@ function keepLatestObjectStoreEntries() {
     let transaction = db.transaction('reviews', 'readwrite');
     let store = transaction.objectStore('reviews');
     let index = store.index('updatedAt');
+    // index.openCursor(null, 'prev').onsuccess = function (event) {
+    //   var cursor = event.target.result;
+    //   if (cursor) {
+    //     return cursor.advance(10);//number for testing limits
+    //   }
+    //   var deleteRest = function (cursor) {
+    //     if (!cursor) {
+    //       return;
+    //     }
+    //     cursor.delete();
+    //     return cursor.continue().deleteRest;
+    //   }
+    // }
     index.openCursor(null, 'prev').onsuccess = function (event) {
       var cursor = event.target.result;
       if (cursor) {
-        console.log(cursor.value.id);
-        return cursor.advance(10);//number for testing limits
+        return cursor.advance(10);
       }
-      var deleteRest = function(cursor) {
+      deleteRest(cursor);
+      function deleteRest(cursor) {
         if (!cursor) {
           return;
         }
         cursor.delete();
-        return cursor.continue().deleteRest;
+        cursor.continue();
+        return deleteRest;
       }
     }
   }
