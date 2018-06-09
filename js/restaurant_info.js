@@ -297,18 +297,22 @@ function keepLatestObjectStoreEntries() {
     index.openCursor(null, 'prev').onsuccess = function (event) {
       var cursor = event.target.result;
       if (cursor) {
-        return cursor.advance(10);
-      }
-      deleteRest(cursor);
-      function deleteRest(cursor) {
-        if (!cursor) {
-          return;
-        }
-        cursor.delete();
-        cursor.continue();
-        return deleteRest;
+        console.log(cursor);
+        // return cursor.advance(5);
+        cursor.advance(2);
+        // deleteRest(cursor);
       }
     }
+    // var deleteRest = function(cursor) {
+    function deleteRest(cursor) {
+      if (!cursor) {
+        return;
+      }
+      cursor.delete();
+      cursor.continue();
+      return deleteRest;
+    }
+
   }
 }
 
