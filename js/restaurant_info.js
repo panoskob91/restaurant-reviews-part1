@@ -248,21 +248,7 @@ function storeReviewsInIndexedDb(review) {
     var transaction = db.transaction('reviews', 'readwrite');
     var store = transaction.objectStore('reviews');
     store.put(review, review.id);
-    //Setup code to keep 50 latest posts
-    /*
-    store.index('updatedAt').openCursor(null, 'prev')
-    .then(function(cursor) {
-      return advance(50);
-    })
-    .then(function deleteRest(cursor) {
-      if (!cursor)
-      {
-        return;
-      }
-      cursor.delete();
-      return cursor.continue().then(deleteRest);
-    });
-    */
+
     transaction.oncomplete = function () {
       db.close();
     }
@@ -276,10 +262,18 @@ function storeReviewsInIndexedDb(review) {
 
 function keepLatestObjectStoreEntries() {
   var openRequest = indexedDB.open('reviews', 1);
+  let limit = 3;
+  let i = 0;
+  let objectStoreEntriesCount = 0;
+
   openRequest.onsuccess = function (event) {
     let db = event.target.result;
     let transaction = db.transaction('reviews', 'readwrite');
     let store = transaction.objectStore('reviews');
+    var countRequest = store.count();
+    countRequest.onsuccess = function() {
+      objectStoreEntriesCount = countRequest.result;
+    };
     let index = store.index('updatedAt');
     // index.openCursor(null, 'prev').onsuccess = function (event) {
     //   var cursor = event.target.result;
@@ -296,24 +290,18 @@ function keepLatestObjectStoreEntries() {
     // }
     index.openCursor(null, 'prev').onsuccess = function (event) {
       var cursor = event.target.result;
-      if (cursor) {
-        console.log(cursor);
-        // return cursor.advance(5);
-        cursor.advance(2);
-        // deleteRest(cursor);
+      console.log(objectStoreEntriesCount);
+      // if (cursor) {
+      //   objectStoreEntriesCount += 1;
+      //   cursor.continue();
+      // }
+      if (cursor && i < limit) {
+        cursor.delete();
+        cursor.continue();
+        i += 1;
       }
     }
-    // var deleteRest = function(cursor) {
-    function deleteRest(cursor) {
-      if (!cursor) {
-        return;
-      }
-      cursor.delete();
-      cursor.continue();
-      return deleteRest;
-    }
-
-  }
+  };
 }
 
 //get restaurant id
