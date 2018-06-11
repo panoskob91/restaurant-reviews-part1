@@ -274,24 +274,13 @@ function keepLatestObjectStoreEntries() {
     //Count the number of entries
     countRequest.onsuccess = function () {
       objectStoreEntriesCount = countRequest.result;
+      limit = Math.floor(objectStoreEntriesCount / 3);
     };
     let index = store.index('updatedAt');
-    // index.openCursor(null, 'prev').onsuccess = function (event) {
-    //   var cursor = event.target.result;
-    //   if (cursor) {
-    //     return cursor.advance(10);//number for testing limits
-    //   }
-    //   var deleteRest = function (cursor) {
-    //     if (!cursor) {
-    //       return;
-    //     }
-    //     cursor.delete();
-    //     return cursor.continue().deleteRest;
-    //   }
-    // }
-    index.openCursor(null, 'prev').onsuccess = function (event) {
-      var cursor = event.target.result;
 
+    // index.openCursor(null, 'prev').onsuccess = function (event) {
+    index.openCursor().onsuccess = function (event) {
+      var cursor = event.target.result;
       if (objectStoreEntriesCount >= 50) {
         if (cursor && i < limit) {
           cursor.delete();
