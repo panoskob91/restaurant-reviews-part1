@@ -271,7 +271,8 @@ function keepLatestObjectStoreEntries() {
     let transaction = db.transaction('reviews', 'readwrite');
     let store = transaction.objectStore('reviews');
     var countRequest = store.count();
-    countRequest.onsuccess = function() {
+    //Count the number of entries
+    countRequest.onsuccess = function () {
       objectStoreEntriesCount = countRequest.result;
     };
     let index = store.index('updatedAt');
@@ -290,15 +291,13 @@ function keepLatestObjectStoreEntries() {
     // }
     index.openCursor(null, 'prev').onsuccess = function (event) {
       var cursor = event.target.result;
-      console.log(objectStoreEntriesCount);
-      // if (cursor) {
-      //   objectStoreEntriesCount += 1;
-      //   cursor.continue();
-      // }
-      if (cursor && i < limit) {
-        cursor.delete();
-        cursor.continue();
-        i += 1;
+
+      if (objectStoreEntriesCount >= 50) {
+        if (cursor && i < limit) {
+          cursor.delete();
+          cursor.continue();
+          i += 1;
+        }
       }
     }
   };
