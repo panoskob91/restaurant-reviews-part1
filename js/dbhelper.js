@@ -42,7 +42,7 @@ class DBHelper {
             var objectStore = db.createObjectStore('restaurant', {keypath : 'name'});
             var index = objectStore.createIndex('updatedAt', 'updatedAt');
           }
-        }
+        };
         openRequest.onsuccess = function(e){
           var db = e.target.result;
           var transaction = db.transaction('restaurant', 'readwrite');
@@ -51,8 +51,11 @@ class DBHelper {
           {
             store.put(jsonObject[i], jsonObject[i].name);
           }
+          transaction.oncomplete = function() {
+            db.close();
+          };
 
-        }
+        };
         callback(null, restauants);
       }else{
         const error = 'Request failed. Returned status of ' + XHR.status;

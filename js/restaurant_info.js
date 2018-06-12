@@ -251,13 +251,13 @@ function storeReviewsInIndexedDb(review) {
 
     transaction.oncomplete = function () {
       db.close();
-    }
-  }
+    };
+  };
 
 
   openRequest.onerror = function (event) {
     console.log(event.target.errorCode);
-  }
+  };
 }
 
 function keepLatestObjectStoreEntries() {
