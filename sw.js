@@ -58,10 +58,10 @@ self.addEventListener('install', function(event) {
             return cache.addAll([
 
                 '/sw.js',
-                '/js/dbhelper.js',
+                //'/js/dbhelper.js',
                 '/js/main.js',
                 '/js/restaurant_info.js',
-                '/js/idbManagement.js'
+                //'/js/idbManagement.js'
 
             ]);
         }).catch(function(error) {
@@ -71,8 +71,23 @@ self.addEventListener('install', function(event) {
     );
 });
 
-self.addEventListener('activate', function() {
+self.addEventListener('activate', function(event) {
     console.log('SW active');
+
+    event.waitUntil(
+        caches.keys().then(function(cacheNames){
+        //   console.log(cacheNames);
+          return Promise.all(
+            cacheNames.filter(function(cacheName){
+            return cacheName.startsWith('Restaurant') && cacheName != scriptCacheName ;
+            }
+            ).map(function(cacheName){
+              return caches.delete(cacheName);
+            })
+          );
+        })
+      );
+
 });
 
 

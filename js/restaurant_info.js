@@ -249,9 +249,9 @@ function storeReviewsInIndexedDb(review) {
     var store = transaction.objectStore('reviews');
     store.put(review, review.id);
 
-    transaction.oncomplete = function () {
-      db.close();
-    };
+    // transaction.oncomplete = function () {
+    //   db.close();
+    // };
   };
 
 

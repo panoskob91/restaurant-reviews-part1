@@ -51,9 +51,9 @@ class DBHelper {
           {
             store.put(jsonObject[i], jsonObject[i].name);
           }
-          transaction.oncomplete = function() {
-            db.close();
-          };
+          // transaction.oncomplete = function() {
+          //   db.close();
+          // };
 
         };
         callback(null, restauants);

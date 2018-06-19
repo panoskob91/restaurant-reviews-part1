@@ -10,9 +10,14 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#252831"/>
   <!-- Api preconnect -->
-  <link rel="preconnect" href="http://localhost:1337/">
+  <link rel="preconnect" href="http://localhost:1337">
   <!-- Preloads -->
-  <link rel="preload" as="script" href="https://maps.googleapis.com/maps/api/js?key=AIzaSyDV-XHhJeEwV76l-x4PpxHZbvGNPipXhJU&libraries=places&callback=initMap">
+  <!-- Google APIs -->
+  <link  rel="dns-preload" href="https://fonts.googleapis.com">
+  <link  rel="dns-preload" href="https://fonts.gstatic.com">
+  <link  rel="dns-preload" href="https://maps.gstatic.com">
+  <!-- MAP preconnect -->
+  <link rel="preconnect" as="script" href="https://maps.googleapis.com/maps/api/js?key=AIzaSyDV-XHhJeEwV76l-x4PpxHZbvGNPipXhJU&libraries=places&callback=initMap">
   <!-- Title  -->
   <title>Restaurant Info</title>
 </head>
@@ -69,7 +74,7 @@
   <!-- Database helpers -->
   <script type="text/javascript" src="js/dbhelper.js"></script>
   <!-- IDB -->
-  <script type="text/javascript" src="js/idbManagement.js"></script>
+  <!-- <script type="text/javascript" src="js/idbManagement.js"></script> -->
   <!-- Main javascript file -->
   <script type="text/javascript" src="js/restaurant_info.js"></script>
   <!-- Add restaurant javascript file -->
