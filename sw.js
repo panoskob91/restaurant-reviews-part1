@@ -58,10 +58,10 @@ self.addEventListener('install', function(event) {
             return cache.addAll([
 
                 '/sw.js',
-                '/js/dbhelper.js',
+                //'/js/dbhelper.js',
                 '/js/main.js',
                 '/js/restaurant_info.js',
-                '/js/idbManagement.js'
+                //'/js/idbManagement.js'
 
             ]);
         }).catch(function(error) {
@@ -71,8 +71,23 @@ self.addEventListener('install', function(event) {
     );
 });
 
-self.addEventListener('activate', function() {
+self.addEventListener('activate', function(event) {
     console.log('SW active');
+
+    event.waitUntil(
+        caches.keys().then(function(cacheNames){
+        //   console.log(cacheNames);
+          return Promise.all(
+            cacheNames.filter(function(cacheName){
+            return cacheName.startsWith('Restaurant') && cacheName != scriptCacheName ;
+            }
+            ).map(function(cacheName){
+              return caches.delete(cacheName);
+            })
+          );
+        })
+      );
+
 });
 
 
@@ -93,7 +108,8 @@ self.addEventListener('fetch', function(event) {
         }).catch(function(error) {
             console.log('Cache fetching error: ' + error);
                 return caches.match('index.html').then(function(){
-                    readDB();
+                    readRestaurantsFromIDB();
+                    readReviewsFromIDB();
                 });
 
         })
@@ -102,7 +118,7 @@ self.addEventListener('fetch', function(event) {
 
 });
 //Function used to read data from indexed DB
-function readDB() {
+function readRestaurantsFromIDB() {
     var request = indexedDB.open('restaurants');
     request.onsuccess = function(e){
         var db = e.target.result;
@@ -111,3 +127,13 @@ function readDB() {
         return store.getAll();
     }
   }
+
+function readReviewsFromIDB() {
+    var request = indexedDB.open('reviews');
+    request.onsuccess = function(e){
+        var db = e.target.result;
+        var transaction = db.transaction(['reviews'], 'readonly');
+        var store = transaction.objectStore('reviews');
+        return store.getAll();
+    }
+}

@@ -1,6 +1,12 @@
 let restaurant;
 var map;
 var reviews = [];
+//Ensure that IndexedDb will be used only if it is supported by the browser
+var idbIsSupported = true;
+
+if (!window.indexedDB) {
+  idbIsSupported = false;
+}
 
 if (navigator.serviceWorker) {
   navigator.serviceWorker.register('/sw.js').then(function (res) {
@@ -28,10 +34,6 @@ window.initMap = () => {
       let restaurantReviewsPromise = fetchRestaurantReviews();
       restaurantReviewsPromise.then(function (reviews) {
         fillReviewsHTML(reviews);
-        reviews.forEach(function (review) {
-          //console.log(review);
-          self.reviews.push(review);
-        });
       }).catch(function (error) {
         console.log(error);
       });
@@ -162,7 +164,8 @@ function fetchRestaurantReviews(restaurant = self.restaurant) {
   //TODO: Refactor response. Check behaviour in case of an array
   return new Promise(function (resolve, reject) {
 
-    let restaurantReviewsURL = getRestaurantReviewsURL();
+    // let restaurantReviewsURL = getRestaurantReviewsURL();
+    let restaurantReviewsURL = 'http://localhost:1337/reviews/';;
     let reviewsXHR = new XMLHttpRequest();
     var restaurantReviewsArray = [];
 
@@ -172,38 +175,56 @@ function fetchRestaurantReviews(restaurant = self.restaurant) {
       if (reviewsXHR.status === 200) {
         //Store data to JSON object(s)
         let reviews = JSON.parse(reviewsXHR.responseText);
-        if (reviews)
-        {
-          if (typeof reviews === 'object')
-          {
-            let reviewJsonObject = {
-                         "id" : reviews.id,
-              "restaurant_id" : reviews.restaurant_id,
-                       "name" : reviews.name,
-                  "createdAt" : reviews.createdAt,
-                  "updatedAt" : reviews.updatedAt,
-                     "rating" : reviews.rating,
-                   "comments" : reviews.comments
+        if (reviews) {
+          // if (typeof reviews === 'object') {
+          // let reviewJsonObject = {
+          //   "id": reviews.id,
+          //   "restaurant_id": reviews.restaurant_id,
+          //   "name": reviews.name,
+          //   "createdAt": reviews.createdAt,
+          //   "updatedAt": reviews.updatedAt,
+          //   "rating": reviews.rating,
+          //   "comments": reviews.comments
+          // };
+          reviews.forEach(function (review) {
+            let reviewJSON = {
+              "id": review.id,
+              "restaurant_id": review.restaurant_id,
+              "name": review.name,
+              "createdAt": review.createdAt,
+              "updatedAt": review.updatedAt,
+              "rating": review.rating,
+              "comments": review.comments
             };
+            if (review.restaurant_id === restaurant.id) {
+              // console.log(reviewJSON.name);
+              restaurantReviewsArray.push(reviewJSON);
+              self.reviews.push(reviewJSON);
+            }
+            if (self.idbIsSupported) {
+              storeReviewsInIndexedDb(review);
+            }
+          });
+          keepLatestObjectStoreEntries();
+          // restaurantReviewsArray.push(reviewJsonObject);
+          // }
+          // else if (typeof reviews === 'object' &&
+          //   reviews.constructor === Array)
+          //   {
+          //   reviews.forEach(function (review) {
+          //     let reviewJSONObject = {
+          //                  "id" : review.id,
+          //       "restaurant_id" : review.restaurant_id,
+          //                "name" : review.name,
+          //           "createdAt" : review.createdAt,
+          //           "updatedAt" : review.updatedAt,
+          //              "rating" : review.rating,
+          //            "comments" : review.comments
+          //     };
+          //     restaurantReviewsArray.push(reviewJSONObject);
+          //   });
+          // }
 
-            restaurantReviewsArray.push(reviewJsonObject);
-          }
-          else if (typeof reviews === 'object' &&
-            reviews.constructor === Array)
-            {
-            reviews.forEach(function (review) {
-              let reviewJSONObject = {
-                           "id" : review.id,
-                "restaurant_id" : review.restaurant_id,
-                         "name" : review.name,
-                    "createdAt" : review.createdAt,
-                    "updatedAt" : review.updatedAt,
-                       "rating" : review.rating,
-                     "comments" : review.comments
-              };
-              restaurantReviewsArray.push(reviewJSONObject);
-            });
-          }
           resolve(restaurantReviewsArray);
         }
       }
@@ -211,6 +232,64 @@ function fetchRestaurantReviews(restaurant = self.restaurant) {
     reviewsXHR.onerror = reject;
     reviewsXHR.send();
   });
+}
+
+function storeReviewsInIndexedDb(review) {
+  var openRequest = indexedDB.open('reviews', 1);
+  openRequest.onupgradeneeded = function (e) {
+    var db = e.target.result;
+    if (!db.objectStoreNames.contains('reviews')) {
+      var objectStore = db.createObjectStore('reviews', { keypath: 'name' });
+      var index = objectStore.createIndex('updatedAt', 'updatedAt');
+    }
+  }
+  openRequest.onsuccess = function (e) {
+    var db = e.target.result;
+    var transaction = db.transaction('reviews', 'readwrite');
+    var store = transaction.objectStore('reviews');
+    store.put(review, review.id);
+
+    // transaction.oncomplete = function () {
+    //   db.close();
+    // };
+  };
+
+
+  openRequest.onerror = function (event) {
+    console.log(event.target.errorCode);
+  };
+}
+
+function keepLatestObjectStoreEntries() {
+  var openRequest = indexedDB.open('reviews', 1);
+  let limit = 3;
+  let i = 0;
+  let objectStoreEntriesCount = 0;
+
+  openRequest.onsuccess = function (event) {
+    let db = event.target.result;
+    let transaction = db.transaction('reviews', 'readwrite');
+    let store = transaction.objectStore('reviews');
+    var countRequest = store.count();
+    //Count the number of entries
+    countRequest.onsuccess = function () {
+      objectStoreEntriesCount = countRequest.result;
+      limit = Math.floor(objectStoreEntriesCount / 3);
+    };
+    let index = store.index('updatedAt');
+
+    // index.openCursor(null, 'prev').onsuccess = function (event) {
+    index.openCursor().onsuccess = function (event) {
+      var cursor = event.target.result;
+      if (objectStoreEntriesCount >= 50) {
+        if (cursor && i < limit) {
+          cursor.delete();
+          cursor.continue();
+          i += 1;
+        }
+      }
+    }
+  };
 }
 
 //get restaurant id

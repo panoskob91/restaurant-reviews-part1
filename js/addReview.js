@@ -2,20 +2,25 @@ var firstTime = true;
 /* =================================== Create and handle submition form ========================= */
 const container = document.getElementById('reviews-container');
 const addReviewForm = document.createElement('form');
+addReviewForm.addEventListener('submit', handleSubmit);
 var showItem = true;
 
 function addReview() {
 
     if (firstTime) {
         addReviewForm.setAttribute('id', 'add-review-form');
-        addReviewForm.setAttribute('onsubmit', 'handleSubmit()');
-    //addReviewForm.setAttribute('action', '/restaurant.html?id=1');
+        //addReviewForm.setAttribute('action', 'http://localhost:1337/reviews');
+        //let restaurantURL = '/restaurant.html?id=' + restaurantId;
+        // addReviewForm.setAttribute('action', restaurantURL);
+        //addReviewForm.setAttribute('method', 'post');
         addReviewForm.setAttribute('display', 'block');
-        addReviewForm.innerHTML  = createFormHTML();
+        addReviewForm.innerHTML = createFormHTML();
         container.appendChild(addReviewForm);
 
+        console.log(addReviewForm);
+        // console.log('reviews = ', self.reviews);
+
         getSliderValue();
-        fetchRestaurantReviews();
 
         firstTime = false;
         showItem = false;
@@ -25,82 +30,137 @@ function addReview() {
             addReviewForm.removeAttribute('class', 'form-hidden');
             showItem = false;
         }
-        else
-        {
+        else {
             addReviewForm.setAttribute('class', 'form-hidden');
             showItem = true;
         }
     }
 }
 
-// function fetchRestaurantReviews() {
-//     let reviewsXHR = new XMLHttpRequest();
-//     let reviewsURL = DBHelper.REVIEWS_URL;
-
-//     reviewsXHR.open('GET', reviewsURL);
-//     reviewsXHR.onload = function() {
-//         if (reviewsXHR.status === 200) {
-//             const reviews = JSON.parse(reviewsXHR.responseText);
-//             console.log(reviews);
-//         }
-//     }
-//     reviewsXHR.onerror = function(error) {
-//         console.log('Reviews fetching error occured : ', error);
-//     }
-//     reviewsXHR.send();
-// }
-
 function getSliderValue() {
-    const slider = document.getElementsByName('rating-slider')[0];
+    //const slider = document.getElementsByName('rating-slider')[0];
+    const slider = document.getElementById('rating-slider');
     const ratingLabel = document.getElementById('rating-label');
     var sliderValue = slider.value;
+    ratingLabel.innerHTML = sliderValue;
     slider.oninput = function () {
         sliderValue = this.value;
         ratingLabel.innerHTML = sliderValue;
     }
+    return sliderValue;
 }
 
 function createFormHTML() {
-    const formHTML = 'Name <br>'
-    + '<input type =' + 'text' + ' name=' + 'reviewer-name' + '>' +
-    '<br>'
-    + 'Rating <br>'
-    + '<input type='+ 'range ' + 'min='+ '1 ' + 'max=' + '10' + ' value=' + '5' + ' name=' + 'rating-slider' +
-    ' step=' + '1' + '>'
-    + '<p id=' + 'rating-label' + '></p>'
-    + 'Comment <br>'
-    + '<textarea rows=' + '10' + ' cols=' + '50' + ' name=' + 'comment-section' + '></textarea>'
-    + '<br>'
-    + '<input type=' + ' submit' + '>';
+    //with name tag form fields are added to the URL
+    const formHTML =
+        '<br>'
+        + '<fieldset>'
+
+        + '<label>Name'
+        + '<input type =' + 'text' + ' id=' + 'reviewer-name' + ' name=' + 'reviewer-name' + ' required' + '>'
+        + '</label>'
+
+        + '<br>'
+        + '<label>Rating'
+        + '<input type=' + 'range ' + 'min=' + '1 ' + 'max=' + '10' + ' value=' + '5' + ' id='
+        + 'rating-slider' + ' name=' + ' rating-slider' + ' step=' + '1' + ' required' + '>'
+        + '<p id=' + 'rating-label' + '></p>'
+        + '</label>'
+
+        + '<label>Comment'
+        + '<br>'
+        + '<textarea rows=' + '10' + ' cols=' + '50' + ' id=' + 'comment-section' + ' name=' + 'comment-section' + ' required' + '></textarea>'
+        + '</label>'
+
+        + '<br>'
+        + '<input type=' + ' submit' + ' value=' + ' Submit' + '>'
+
+        + '</fieldset>';
+
+
 
     return formHTML;
 }
-/* ================================================================================================ */
 
-function launchPopup(firstTime) {
-    if (firstTime === true) {
-        const popupWindow = document.createElement('div');
-        popupWindow.setAttribute('class', 'modal-window');
-    }
-}
-
-function hadndleSubmit() {
+function handleSubmit(e) {
+    e.preventDefault();
+    let proceedToPost = true;
+    const addReviewForm = document.getElementById('add-review-form');
     const name = document.getElementById('reviewer-name');
     const restaurantRating = document.getElementById('rating-slider');
+    const ratingLabel = document.getElementById('rating-label');
     const commentSection = document.getElementById('comment-section');
 
-    if (name !== null &&
-        restaurantRating.value !== null &&
-        commentSection !== null){
-            console.log('hi');
-    }
-    else
-    {
-        if (name == null)
-        {
-            name.setAttribute('background-color', 'red');
+    let restaurantId = getRestaurantID();
+    let reviewerName = name.value;
+    let rating = restaurantRating.value;
+    let restaurantComments = commentSection.value;
+
+    let postedData = {};
+    postedData.restaurant_id = restaurantId;
+    postedData.name = reviewerName;
+    postedData.rating = rating;
+    postedData.comments = restaurantComments;
+    let jsonData = JSON.stringify(postedData);
+    let restaurantReviews = self.reviews;
+    //Check if entry exists, in order to avoid duplicate entries
+    restaurantReviews.forEach(function(review) {
+        console.log('review = ', review);
+        if (review.comments === postedData.comments &&
+            review.name === postedData.name &&
+            review.rating === postedData.rating &&
+            review.restaurant_id === postedData.restaurant_id) {
+
+                proceedToPost = false;
         }
+    });
+    //Boolean proccedToPost is used to avoid adding duplicate data
+    if (proceedToPost)
+    {
+        let url = 'http://localhost:1337/reviews/';
+        let postReviewXHR = new XMLHttpRequest();
+        postReviewXHR.open('POST', url);
+        postReviewXHR.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+        console.log(postReviewXHR);
+        postReviewXHR.onload = function () {
+            //Needs to provide following parameters
+            // {
+            //     "restaurant_id": <restaurant_id>,
+            //     "name": <reviewer_name>,
+            //     "rating": <rating>,
+            //     "comments": <comment_text>
+            // }
+    }
+        postReviewXHR.send(jsonData);
     }
 
-    console.log('Correct');
+}
+
+/* ================================================================================================ */
+
+//Validates input form
+//TODO: Consider Removing this function
+function validateForm() {
+    var name = document.forms['add-review-form']['reviewer-name'].value;
+    var comment = document.forms['add-review-form']['comment-section'].value;
+    var ratingSlider = document.forms['add-review-form']['rating-label'].value;
+    if (name === "") {
+        alert('Name must be filled out');
+        return false;
+    }
+    if (comment === '') {
+        alert('Comment must be filled out');
+        return false;
+    }
+    if (ratingSlider == '') {
+        alert('Rating must be filled out');
+        return false;
+    }
+    return true;
+}
+
+//Extracts restaurant id from restaurant object
+function getRestaurantID() {
+    let restaurant = self.restaurant;
+    return restaurant.id;
 }
