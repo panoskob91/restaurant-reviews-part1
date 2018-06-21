@@ -54,7 +54,7 @@ function createFormHTML() {
     //with name tag form fields are added to the URL
     const formHTML =
         '<br>'
-        + '<fieldset>'
+        + '<fieldset id="submit-review">'
 
         + '<label>Name'
         + '<input type =' + 'text' + ' id=' + 'reviewer-name' + ' name=' + 'reviewer-name' + ' required' + '>'

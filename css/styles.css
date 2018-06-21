@@ -282,6 +282,11 @@ nav h1 a {
 
 }
 
+#favorite-action {
+  border-radius: 4px;
+  background-color: white;
+}
+
 #restaurant-name {
   /* color: #f18200; */
   color: #804000;
@@ -395,6 +400,9 @@ nav h1 a {
   font-weight: 300;
   letter-spacing: -1px;
   padding-bottom: 1pt;
+}
+#add-review-form{
+  width: 80%;
 }
 #reviews-list {
   margin: 0;

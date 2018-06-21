@@ -403,3 +403,23 @@ getParameterByName = (name, url) => {
     return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
+
+var isFavorite = false;
+
+function favoriteButtonClicked() {
+  const favoriteImage = document.getElementById('favorite-reastaurant-indicator');
+  if (isFavorite)
+  {
+
+    //Set image to filled star
+    favoriteImage.setAttribute('src', 'img/filled-star.png');
+    favoriteImage.setAttribute('alt', 'favorite');
+    isFavorite = false;
+  }else {
+
+    //Set image to unfilled star
+    favoriteImage.setAttribute('src', 'img/empty-star.png');
+    favoriteImage.setAttribute('alt', 'no favorite');
+    isFavorite = true;
+  }
+}
