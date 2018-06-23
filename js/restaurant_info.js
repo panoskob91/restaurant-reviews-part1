@@ -408,18 +408,62 @@ var isFavorite = false;
 
 function favoriteButtonClicked() {
   const favoriteImage = document.getElementById('favorite-reastaurant-indicator');
+  const apiEndpoint = 'http://localhost:1337/restaurants';
+  let favoritesXHR = new XMLHttpRequest();
+  favoritesXHR.open('POST', apiEndpoint);
+
+  let restaurantID = self.restaurant.id;
+
   if (isFavorite)
   {
-
     //Set image to filled star
     favoriteImage.setAttribute('src', 'img/filled-star.png');
     favoriteImage.setAttribute('alt', 'favorite');
+    self.restaurant.is_favorite = false;
+
+    //Update dataSource favorite flag
+    let favoritePromise = updateDataSource(isFavorite, restaurantID);
+    favoritePromise.then(function(restaurant){
+      console.log(restaurant);
+    }).catch(function(error){
+      console.log(error);
+    });
+
     isFavorite = false;
   }else {
 
     //Set image to unfilled star
     favoriteImage.setAttribute('src', 'img/empty-star.png');
     favoriteImage.setAttribute('alt', 'no favorite');
+    self.restaurant.is_favorite = true;
+    //console.log(self.restaurant);
+
     isFavorite = true;
   }
+}
+function updateDataSource(isFavorite, restaurantID) {
+  return new Promise(function(resolve, reject){
+     const restaurantsApiEndPoint = 'http://localhost:1337/restaurants/';;
+     let favoritesXHR = new XMLHttpRequest();
+     //favoritesXHR.open('PUT', restaurantsApiEndPoint);
+     favoritesXHR.open('POST', restaurantsApiEndPoint);
+     favoritesXHR.setRequestHeader('Content-type', 'application/json');
+     favoritesXHR.onload = function() {
+      if (favoritesXHR.status === 200) {
+        let restaurants = JSON.parse(favoritesXHR.responseText);
+        let restaurant;
+        restaurants.forEach(function(currentRestaurant){
+          if (currentRestaurant.id === restaurantID) {
+            restaurant = currentRestaurant;
+            restaurant.is_favorite = isFavorite;
+          }
+        });
+        resolve(restaurant);
+     }
+    }
+    favoritesXHR.onerror = function(error) {
+      reject(error);
+    }
+    favoritesXHR.send();
+  });
 }

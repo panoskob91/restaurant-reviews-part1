@@ -32,31 +32,34 @@ class DBHelper {
     XHR.onload = function() {
       if (XHR.status === 200) {
         const jsonObject = JSON.parse(XHR.responseText);
-        const restauants = jsonObject;
+        const restaurants = jsonObject;
         //Handle IndexedDB
-        var openRequest = indexedDB.open('restaurants', 1);
+          var openRequest = indexedDB.open('restaurants', 1);
 
-        openRequest.onupgradeneeded = function(e){
-          var db = e.target.result;
-          if(!db.objectStoreNames.contains('restaurant')){
-            var objectStore = db.createObjectStore('restaurant', {keypath : 'name'});
-            var index = objectStore.createIndex('updatedAt', 'updatedAt');
-          }
-        };
-        openRequest.onsuccess = function(e){
-          var db = e.target.result;
-          var transaction = db.transaction('restaurant', 'readwrite');
-          var store = transaction.objectStore('restaurant');
-          for (let i = 0; i < jsonObject.length; i++)
-          {
-            store.put(jsonObject[i], jsonObject[i].name);
-          }
-          // transaction.oncomplete = function() {
-          //   db.close();
-          // };
+          openRequest.onupgradeneeded = function(e){
+            var db = e.target.result;
+            if(!db.objectStoreNames.contains('restaurant')){
+              var objectStore = db.createObjectStore('restaurant', {keypath : 'name'});
+              var index = objectStore.createIndex('updatedAt', 'updatedAt');
+            }
+          };
+          openRequest.onsuccess = function(e){
+            var db = e.target.result;
+            var transaction = db.transaction('restaurant', 'readwrite');
+            var store = transaction.objectStore('restaurant');
 
-        };
-        callback(null, restauants);
+            for (let i = 0; i < jsonObject.length; i++)
+            {
+              if (jsonObject[i].name) {
+                store.put(jsonObject[i], jsonObject[i].name);
+              }
+            }
+            transaction.oncomplete = function() {
+              db.close();
+            };
+
+          };
+        callback(null, restaurants);
       }else{
         const error = 'Request failed. Returned status of ' + XHR.status;
         callback(error, null);
@@ -66,19 +69,6 @@ class DBHelper {
     XHR.onerror = function(error) {
       console.log('An error occured: ', error);
     }
-
-    // xhr.onload = () => {
-    //   if (xhr.status === 200) { // Got a success response from server!
-    //     const json = JSON.parse(xhr.responseText);
-    //     const restaurants = json.restaurants;
-    //     callback(null, restaurants);
-    //   } else { // Oops!. Got an error from server.
-    //     const error = (`Request failed. Returned status of ${xhr.status}`);
-    //     callback(error, null);
-    //   }
-    // };
-
-    // xhr.send();
     XHR.send();
   }
 
@@ -100,7 +90,6 @@ class DBHelper {
       }
     });
   }
-
   /**
    * Fetch restaurants by a cuisine type with proper error handling.
    */
