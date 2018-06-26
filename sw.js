@@ -47,6 +47,8 @@ self.addEventListener('install', function(event) {
                 '/converted-images-toJPEG/8.jpeg',
                 '/converted-images-toJPEG/9.jpeg',
                 '/converted-images-toJPEG/10.jpeg',
+                '/img/empty-star.png',
+                '/img/filled-star.png',
                 '/data/restaurants.json'
 
             ]);
