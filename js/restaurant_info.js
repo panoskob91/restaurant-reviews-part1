@@ -413,7 +413,6 @@ getParameterByName = (name, url) => {
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
-
 function favoriteButtonClicked() {
   const favoriteImage = document.getElementById('favorite-reastaurant-indicator');
   let restaurantID = self.restaurant.id;
@@ -453,37 +452,31 @@ function updateDataSource(isFavorite, restaurantID) {
 
   favoriteXHR.send(JSON.stringify(postedObject));
   favoriteXHR.onload = function() {
-    console.log(this.responseText);
+    //console.log(this.responseText);
   }
 }
-let restaurantPromise = fetchRestaurants();
-restaurantPromise.then(function(array) {
-  console.log(array);
-}).catch(function(error) {
-  console.log(error);
-});
 
-//Gets all restaurants
-function fetchRestaurants() {
-  return new Promise(function(resolve, reject){
-    const url = 'http://localhost:1337/restaurants';
-    let restaurantXHR = new XMLHttpRequest();
-    let restaurants = new Array();
-    restaurantXHR.open('GET', url);
-    restaurantXHR.onload = function() {
-      if (restaurantXHR.status === 200) {
-        const restaurantsResponse = JSON.parse(restaurantXHR.responseText);
-        restaurantsResponse.forEach(function(restaurant) {
-          if (restaurant.name) {
-            restaurants.push(restaurant);
-          }
-        });
-      }
-      resolve(restaurants);
-    }
-    restaurantXHR.onerror = function(error) {
-      reject(error);
-    }
-    restaurantXHR.send();
-  });
-}
+// //Gets all restaurants
+// function fetchRestaurants() {
+//   return new Promise(function(resolve, reject){
+//     const url = 'http://localhost:1337/restaurants';
+//     let restaurantXHR = new XMLHttpRequest();
+//     let restaurants = new Array();
+//     restaurantXHR.open('GET', url);
+//     restaurantXHR.onload = function() {
+//       if (restaurantXHR.status === 200) {
+//         const restaurantsResponse = JSON.parse(restaurantXHR.responseText);
+//         restaurantsResponse.forEach(function(restaurant) {
+//           if (restaurant.name) {
+//             restaurants.push(restaurant);
+//           }
+//         });
+//       }
+//       resolve(restaurants);
+//     }
+//     restaurantXHR.onerror = function(error) {
+//       reject(error);
+//     }
+//     restaurantXHR.send();
+//   });
+// }
