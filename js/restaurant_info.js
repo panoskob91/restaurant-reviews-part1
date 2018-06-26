@@ -3,6 +3,7 @@ var map;
 var reviews = [];
 //Ensure that IndexedDb will be used only if it is supported by the browser
 var idbIsSupported = true;
+var isFavorite;
 
 if (!window.indexedDB) {
   idbIsSupported = false;
@@ -31,6 +32,14 @@ window.initMap = () => {
       });
       fillBreadcrumb();
       // fetchRestaurantReviews();
+
+      self.isFavorite = self.restaurant.is_favorite;
+      if (self.isFavorite) {
+        const favoriteButtonIcon = document.getElementById('favorite-reastaurant-indicator');
+        favoriteButtonIcon.setAttribute('src', 'img/filled-star.png');
+        favoriteButtonIcon.setAttribute('alt', 'favorite');
+      }
+
       let restaurantReviewsPromise = fetchRestaurantReviews();
       restaurantReviewsPromise.then(function (reviews) {
         fillReviewsHTML(reviews);
@@ -404,17 +413,12 @@ getParameterByName = (name, url) => {
   return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
-var isFavorite = false;
 
 function favoriteButtonClicked() {
   const favoriteImage = document.getElementById('favorite-reastaurant-indicator');
-  const apiEndpoint = 'http://localhost:1337/restaurants';
-  let favoritesXHR = new XMLHttpRequest();
-  favoritesXHR.open('POST', apiEndpoint);
-
   let restaurantID = self.restaurant.id;
 
-  if (isFavorite)
+  if (self.isFavorite)
   {
     //Set image to filled star
     favoriteImage.setAttribute('src', 'img/filled-star.png');
@@ -422,48 +426,64 @@ function favoriteButtonClicked() {
     self.restaurant.is_favorite = false;
 
     //Update dataSource favorite flag
-    let favoritePromise = updateDataSource(isFavorite, restaurantID);
-    favoritePromise.then(function(restaurant){
-      console.log(restaurant);
-    }).catch(function(error){
-      console.log(error);
-    });
-
-    isFavorite = false;
-  }else {
-
+    updateDataSource(self.isFavorite, restaurantID);
+    self.isFavorite = false;
+  }
+  else
+  {
     //Set image to unfilled star
     favoriteImage.setAttribute('src', 'img/empty-star.png');
     favoriteImage.setAttribute('alt', 'no favorite');
     self.restaurant.is_favorite = true;
-    //console.log(self.restaurant);
 
-    isFavorite = true;
+    //Update data source favorite flag
+    updateDataSource(self.isFavorite, restaurantID);
+    self.isFavorite = true;
   }
 }
+
 function updateDataSource(isFavorite, restaurantID) {
+  const restaurantApiEndPoint = 'http://localhost:1337/restaurants/' + restaurantID;
+
+  let favoriteXHR = new XMLHttpRequest();
+  favoriteXHR.open('POST', restaurantApiEndPoint);
+  favoriteXHR.setRequestHeader('Content-type', 'application/json');
+  let postedObject = self.restaurant;
+  postedObject.is_favorite = isFavorite;
+
+  favoriteXHR.send(JSON.stringify(postedObject));
+  favoriteXHR.onload = function() {
+    console.log(this.responseText);
+  }
+}
+let restaurantPromise = fetchRestaurants();
+restaurantPromise.then(function(array) {
+  console.log(array);
+}).catch(function(error) {
+  console.log(error);
+});
+
+//Gets all restaurants
+function fetchRestaurants() {
   return new Promise(function(resolve, reject){
-     const restaurantsApiEndPoint = 'http://localhost:1337/restaurants/';;
-     let favoritesXHR = new XMLHttpRequest();
-     //favoritesXHR.open('PUT', restaurantsApiEndPoint);
-     favoritesXHR.open('POST', restaurantsApiEndPoint);
-     favoritesXHR.setRequestHeader('Content-type', 'application/json');
-     favoritesXHR.onload = function() {
-      if (favoritesXHR.status === 200) {
-        let restaurants = JSON.parse(favoritesXHR.responseText);
-        let restaurant;
-        restaurants.forEach(function(currentRestaurant){
-          if (currentRestaurant.id === restaurantID) {
-            restaurant = currentRestaurant;
-            restaurant.is_favorite = isFavorite;
+    const url = 'http://localhost:1337/restaurants';
+    let restaurantXHR = new XMLHttpRequest();
+    let restaurants = new Array();
+    restaurantXHR.open('GET', url);
+    restaurantXHR.onload = function() {
+      if (restaurantXHR.status === 200) {
+        const restaurantsResponse = JSON.parse(restaurantXHR.responseText);
+        restaurantsResponse.forEach(function(restaurant) {
+          if (restaurant.name) {
+            restaurants.push(restaurant);
           }
         });
-        resolve(restaurant);
-     }
+      }
+      resolve(restaurants);
     }
-    favoritesXHR.onerror = function(error) {
+    restaurantXHR.onerror = function(error) {
       reject(error);
     }
-    favoritesXHR.send();
+    restaurantXHR.send();
   });
 }
