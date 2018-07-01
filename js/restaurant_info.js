@@ -39,6 +39,23 @@ window.initMap = () => {
         favoriteButtonIcon.setAttribute('src', 'img/filled-star.png');
         favoriteButtonIcon.setAttribute('alt', 'favorite');
       }
+      if (navigator.onLine) {
+        //Post reviews stored into idb object store
+        DBHelper.getAllNewReviews().then(function (array) {
+          // console.log(array);
+          DBHelper.clearObjectStore('new-reviews', 'new-review');
+          array.forEach(function (element) {
+            DBHelper.postNewReview(element).then(function (xhr) {
+              // console.log(xhr);
+            }).catch(function (error) {
+              DBHelper.addNewReviewToIndexedDB(element);
+              console.log('posting error :', error);
+            });
+          });
+        }).catch(function (error) {
+          console.log('error :', error);
+        });
+      }
 
       let restaurantReviewsPromise = fetchRestaurantReviews();
       restaurantReviewsPromise.then(function (reviews) {
@@ -46,6 +63,8 @@ window.initMap = () => {
       }).catch(function (error) {
         console.log(error);
       });
+
+
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
     }
   });
@@ -419,8 +438,7 @@ function favoriteButtonClicked() {
   const favoriteImage = document.getElementById('favorite-reastaurant-indicator');
   let restaurantID = self.restaurant.id;
 
-  if (self.isFavorite)
-  {
+  if (self.isFavorite) {
     //Set image to filled star
     favoriteImage.setAttribute('src', 'img/filled-star.png');
     favoriteImage.setAttribute('alt', 'favorite');
@@ -430,8 +448,7 @@ function favoriteButtonClicked() {
     updateDataSource(self.isFavorite, restaurantID);
     self.isFavorite = false;
   }
-  else
-  {
+  else {
     //Set image to unfilled star
     favoriteImage.setAttribute('src', 'img/empty-star.png');
     favoriteImage.setAttribute('alt', 'no favorite');
@@ -453,7 +470,7 @@ function updateDataSource(isFavorite, restaurantID) {
   postedObject.is_favorite = isFavorite;
 
   favoriteXHR.send(JSON.stringify(postedObject));
-  favoriteXHR.onload = function() {
+  favoriteXHR.onload = function () {
     //console.log(this.responseText);
   }
 }

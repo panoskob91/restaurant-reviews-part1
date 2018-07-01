@@ -29,44 +29,43 @@ class DBHelper {
     xhr.open('GET', DBHelper.DATABASE_URL);
     let XHR = new XMLHttpRequest();
     XHR.open('GET', DBHelper.RESTAURANTS_URL);
-    XHR.onload = function() {
+    XHR.onload = function () {
       if (XHR.status === 200) {
         const jsonObject = JSON.parse(XHR.responseText);
         const restaurants = jsonObject;
         //Handle IndexedDB
-          var openRequest = indexedDB.open('restaurants', 1);
+        var openRequest = indexedDB.open('restaurants', 1);
 
-          openRequest.onupgradeneeded = function(e){
-            var db = e.target.result;
-            if(!db.objectStoreNames.contains('restaurant')){
-              var objectStore = db.createObjectStore('restaurant', {keypath : 'name'});
-              var index = objectStore.createIndex('updatedAt', 'updatedAt');
+        openRequest.onupgradeneeded = function (e) {
+          var db = e.target.result;
+          if (!db.objectStoreNames.contains('restaurant')) {
+            var objectStore = db.createObjectStore('restaurant', { keypath: 'name' });
+            var index = objectStore.createIndex('updatedAt', 'updatedAt');
+          }
+        };
+        openRequest.onsuccess = function (e) {
+          var db = e.target.result;
+          var transaction = db.transaction('restaurant', 'readwrite');
+          var store = transaction.objectStore('restaurant');
+
+          for (let i = 0; i < jsonObject.length; i++) {
+            if (jsonObject[i].name) {
+              store.put(jsonObject[i], jsonObject[i].name);
             }
+          }
+          transaction.oncomplete = function () {
+            db.close();
           };
-          openRequest.onsuccess = function(e){
-            var db = e.target.result;
-            var transaction = db.transaction('restaurant', 'readwrite');
-            var store = transaction.objectStore('restaurant');
 
-            for (let i = 0; i < jsonObject.length; i++)
-            {
-              if (jsonObject[i].name) {
-                store.put(jsonObject[i], jsonObject[i].name);
-              }
-            }
-            transaction.oncomplete = function() {
-              db.close();
-            };
-
-          };
+        };
         callback(null, restaurants);
-      }else{
+      } else {
         const error = 'Request failed. Returned status of ' + XHR.status;
         callback(error, null);
       }
 
     };
-    XHR.onerror = function(error) {
+    XHR.onerror = function (error) {
       console.log('An error occured: ', error);
     }
     XHR.send();
@@ -203,51 +202,97 @@ class DBHelper {
       title: restaurant.name,
       url: DBHelper.urlForRestaurant(restaurant),
       map: map,
-      animation: google.maps.Animation.DROP}
+      animation: google.maps.Animation.DROP
+    }
     );
     return marker;
   }
 
   static postNewReview(postObject) {
-    return new Promise(function(resolve, reject) {
-        let url = 'http://localhost:1337/reviews/';
-        let postReviewXHR = new XMLHttpRequest();
-        postReviewXHR.open('POST', url);
-        postReviewXHR.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-        postReviewXHR.send(JSON.stringify(postObject));
+    return new Promise(function (resolve, reject) {
+      let url = 'http://localhost:1337/reviews/';
+      let postReviewXHR = new XMLHttpRequest();
+      postReviewXHR.open('POST', url);
+      postReviewXHR.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+      postReviewXHR.send(JSON.stringify(postObject));
 
-        postReviewXHR.onload = function() {
-            // if (postReviewXHR.status === 200 || postReviewXHR.status === 201) {
-                resolve(postReviewXHR);
-            // }
-        }
+      postReviewXHR.onload = function () {
+        // if (postReviewXHR.status === 200 || postReviewXHR.status === 201) {
+        resolve(postReviewXHR);
+        // }
+      }
 
-        postReviewXHR.onerror = function(e) {
-            reject(e);
-        }
+      postReviewXHR.onerror = function (e) {
+        reject(e);
+      }
     });
 
   }
 
   static addNewReviewToIndexedDB(postedData) {
     var openRequest = indexedDB.open('new-reviews', 1);
-    openRequest.onupgradeneeded = function(e){
-        var db = e.target.result;
-        if(!db.objectStoreNames.contains('new-reviews')){
-            db.createObjectStore('new-review', {keypath : 'name'});
-            var index = objectStore.createIndex('name', 'name');
-        }
+    openRequest.onupgradeneeded = function (e) {
+      var db = e.target.result;
+      if (!db.objectStoreNames.contains('new-reviews')) {
+        db.createObjectStore('new-review', { keypath: 'name' });
+        // var index = objectStore.createIndex('name', 'name');
+      }
     }
 
-    openRequest.onsuccess = function(event) {
+    openRequest.onsuccess = function (event) {
+      let db = event.target.result;
+      let transaction = db.transaction('new-review', 'readwrite');
+      let store = transaction.objectStore('new-review');
+      store.put(postedData, postedData.name);
+      transaction.oncomplete = function () {
+        db.close();
+      };
+    };
+  }
+
+  static getAllNewReviews() {
+
+    return new Promise(function (resolve, reject) {
+      var openRequest = indexedDB.open('new-reviews', 1);
+      var outputArray = new Array();
+
+      openRequest.onsuccess = function (event) {
         let db = event.target.result;
         let transaction = db.transaction('new-review', 'readwrite');
         let store = transaction.objectStore('new-review');
-        store.put(postedData, postedData.name);
-        transaction.oncomplete = function() {
-            db.close();
+        let request = store.getAll();
+
+        request.onsuccess = function (event) {
+          //Get all reviews on object store
+          let results = event.target.result;
+
+          results.forEach(function (result) {
+            outputArray.push(result);
+          });
+          resolve(outputArray);
         };
-    };
+
+        transaction.oncomplete = function () {
+          db.close();
+        }
+      };
+      openRequest.onerror = function (error) {
+        reject(error);
+      };
+    });
+  }
+
+  static clearObjectStore(database, objectStoreName) {
+    var openRequest = indexedDB.open(database, 1);
+    openRequest.onsuccess = function (event) {
+      let db = event.target.result;
+      let transaction = db.transaction(objectStoreName, 'readwrite');
+      let store = transaction.objectStore(objectStoreName);
+      store.clear();
+      transaction.oncomplete = function () {
+        db.close();
+      }
+    }
   }
 
 }

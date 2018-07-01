@@ -78,7 +78,6 @@ function createFormHTML() {
 
 function handleSubmit(e) {
     e.preventDefault();
-    var isOnline = navigator.onLine; //Check if user is online
     let proceedToPost = true;
     const addReviewForm = document.getElementById('add-review-form');
     const name = document.getElementById('reviewer-name');
@@ -101,12 +100,7 @@ function handleSubmit(e) {
     postedData.rating = rating;
     postedData.comments = restaurantComments;
 
-    isOnline = navigator.onLine;
-    if (!isOnline) {
-         DBHelper.addNewReviewToIndexedDB(postedData);
-    }
-
-    let jsonData = JSON.stringify(postedData);
+    // let jsonData = JSON.stringify(postedData);
     let restaurantReviews = self.reviews;
     //Check if entry exists, in order to avoid duplicate entries
     restaurantReviews.forEach(function(review) {
@@ -123,114 +117,17 @@ function handleSubmit(e) {
     //Boolean proccedToPost is used to avoid adding duplicate data
     if (proceedToPost)
     {
+        var isOnline = navigator.onLine;
+        if (!isOnline) {
+            DBHelper.addNewReviewToIndexedDB(postedData);
+        }
         //Post new review
          DBHelper.postNewReview(postedData).then(function(xhr) {
-            console.log(xhr);
-        })
-        //Handle error
-        .catch(function(error) {
-            let allReviewsPromise = getAllNewReviews();
-        allReviewsPromise.then(function(newReviews){
-            //Clear object store
-            var openRequest = indexedDB.open('new-reviews', 1);
-            openRequest.onsuccess = function(event) {
-                let db = event.target.result;
-                let transaction = db.transaction('new-review', 'readwrite');
-                let store = transaction.objectStore('new-review');
-                store.clear();
-                transaction.oncomplete = function() {
-                    db.close();
-                }
-            }
-            //Post reviews stored on objectstore
-            newReviews.forEach(function(newReview) {
-                    //POST
-                    let postIDBDataPromise =  DBHelper.postNewReview(newReview);
-                    postIDBDataPromise.then(function() {
-
-                    }).catch(function(error) {
-                        DBHelper.addNewReviewToIndexedDB(newReview);
-                        console.log('Posting error', error);
-                    });
-            });
+            // console.log(xhr);
         }).catch(function(error) {
-            console.log(error);
-        });
-            console.log('Post error', error);
+            //Handle error
+        DBHelper.addNewReviewToIndexedDB(postedData);
+        console.log('Posting error', error);
         });
     }
-}
-
-// function postNewReview(postObject) {
-//     return new Promise(function(resolve, reject) {
-//         let url = 'http://localhost:1337/reviews/';
-//         let postReviewXHR = new XMLHttpRequest();
-//         postReviewXHR.open('POST', url);
-//         postReviewXHR.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-//         postReviewXHR.send(JSON.stringify(postObject));
-
-//         postReviewXHR.onload = function() {
-//             // if (postReviewXHR.status === 200 || postReviewXHR.status === 201) {
-//                 resolve(postReviewXHR);
-//             // }
-//         }
-
-//         postReviewXHR.onerror = function(e) {
-//             reject(e);
-//         }
-//     });
-
-// }
-
-// function addNewReviewToIndexedDB(postedData) {
-//     var openRequest = indexedDB.open('new-reviews', 1);
-//     openRequest.onupgradeneeded = function(e){
-//         var db = e.target.result;
-//         if(!db.objectStoreNames.contains('new-reviews')){
-//             db.createObjectStore('new-review', {keypath : 'name'});
-//             var index = objectStore.createIndex('name', 'name');
-//         }
-//     }
-
-//     openRequest.onsuccess = function(event) {
-//         let db = event.target.result;
-//         let transaction = db.transaction('new-review', 'readwrite');
-//         let store = transaction.objectStore('new-review');
-//         store.put(postedData, postedData.name);
-//         transaction.oncomplete = function() {
-//             db.close();
-//         }
-//     }
-// }
-
-function getAllNewReviews() {
-
-    return new Promise(function(resolve, reject) {
-        var openRequest = indexedDB.open('new-reviews', 1);
-        var outputArray = new Array();
-
-        openRequest.onsuccess = function(event) {
-            let db = event.target.result;
-            let transaction = db.transaction('new-review', 'readwrite');
-            let store = transaction.objectStore('new-review');
-            let request = store.getAll();
-
-            request.onsuccess = function(event) {
-                //Get all reviews on object store
-                let results = event.target.result;
-
-                results.forEach(function(result) {
-                    outputArray.push(result);
-                });
-                resolve(outputArray);
-            };
-
-                transaction.oncomplete = function() {
-                    db.close();
-                }
-        };
-        openRequest.onerror = function(error) {
-            reject(error);
-        };
-    });
 }
