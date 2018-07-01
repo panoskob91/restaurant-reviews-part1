@@ -1,4 +1,5 @@
 var firstTime = true;
+
 /* =================================== Create and handle submition form ========================= */
 const container = document.getElementById('reviews-container');
 const addReviewForm = document.createElement('form');
@@ -9,16 +10,9 @@ function addReview() {
 
     if (firstTime) {
         addReviewForm.setAttribute('id', 'add-review-form');
-        //addReviewForm.setAttribute('action', 'http://localhost:1337/reviews');
-        //let restaurantURL = '/restaurant.html?id=' + restaurantId;
-        // addReviewForm.setAttribute('action', restaurantURL);
-        //addReviewForm.setAttribute('method', 'post');
         addReviewForm.setAttribute('display', 'block');
         addReviewForm.innerHTML = createFormHTML();
         container.appendChild(addReviewForm);
-
-        console.log(addReviewForm);
-        // console.log('reviews = ', self.reviews);
 
         getSliderValue();
 
@@ -84,6 +78,7 @@ function createFormHTML() {
 
 function handleSubmit(e) {
     e.preventDefault();
+    var isOnline = navigator.onLine; //Check if user is online
     let proceedToPost = true;
     const addReviewForm = document.getElementById('add-review-form');
     const name = document.getElementById('reviewer-name');
@@ -91,9 +86,13 @@ function handleSubmit(e) {
     const ratingLabel = document.getElementById('rating-label');
     const commentSection = document.getElementById('comment-section');
 
-    let restaurantId = getRestaurantID();
+    // let restaurantId = getRestaurantID();
+    let restaurantId = self.restaurant.id;
     let reviewerName = name.value;
     let rating = restaurantRating.value;
+    // .value returns string. We need to use the integer so we take the integer
+    //and assign it to the rating variable
+    rating = parseInt(rating);
     let restaurantComments = commentSection.value;
 
     let postedData = {};
@@ -101,66 +100,137 @@ function handleSubmit(e) {
     postedData.name = reviewerName;
     postedData.rating = rating;
     postedData.comments = restaurantComments;
+
+    isOnline = navigator.onLine;
+    if (!isOnline) {
+         DBHelper.addNewReviewToIndexedDB(postedData);
+    }
+
     let jsonData = JSON.stringify(postedData);
     let restaurantReviews = self.reviews;
     //Check if entry exists, in order to avoid duplicate entries
     restaurantReviews.forEach(function(review) {
-        console.log('review = ', review);
+
         if (review.comments === postedData.comments &&
             review.name === postedData.name &&
             review.rating === postedData.rating &&
-            review.restaurant_id === postedData.restaurant_id) {
-
+            review.restaurant_id === postedData.restaurant_id)
+        {
+                window.alert("Review already exists. \n Please add another review");
                 proceedToPost = false;
         }
     });
     //Boolean proccedToPost is used to avoid adding duplicate data
     if (proceedToPost)
     {
-        let url = 'http://localhost:1337/reviews/';
-        let postReviewXHR = new XMLHttpRequest();
-        postReviewXHR.open('POST', url);
-        postReviewXHR.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-        console.log(postReviewXHR);
-        postReviewXHR.onload = function () {
-            //Needs to provide following parameters
-            // {
-            //     "restaurant_id": <restaurant_id>,
-            //     "name": <reviewer_name>,
-            //     "rating": <rating>,
-            //     "comments": <comment_text>
-            // }
-    }
-        postReviewXHR.send(jsonData);
-    }
+        //Post new review
+         DBHelper.postNewReview(postedData).then(function(xhr) {
+            console.log(xhr);
+        })
+        //Handle error
+        .catch(function(error) {
+            let allReviewsPromise = getAllNewReviews();
+        allReviewsPromise.then(function(newReviews){
+            //Clear object store
+            var openRequest = indexedDB.open('new-reviews', 1);
+            openRequest.onsuccess = function(event) {
+                let db = event.target.result;
+                let transaction = db.transaction('new-review', 'readwrite');
+                let store = transaction.objectStore('new-review');
+                store.clear();
+                transaction.oncomplete = function() {
+                    db.close();
+                }
+            }
+            //Post reviews stored on objectstore
+            newReviews.forEach(function(newReview) {
+                    //POST
+                    let postIDBDataPromise =  DBHelper.postNewReview(newReview);
+                    postIDBDataPromise.then(function() {
 
+                    }).catch(function(error) {
+                        DBHelper.addNewReviewToIndexedDB(newReview);
+                        console.log('Posting error', error);
+                    });
+            });
+        }).catch(function(error) {
+            console.log(error);
+        });
+            console.log('Post error', error);
+        });
+    }
 }
 
-/* ================================================================================================ */
+// function postNewReview(postObject) {
+//     return new Promise(function(resolve, reject) {
+//         let url = 'http://localhost:1337/reviews/';
+//         let postReviewXHR = new XMLHttpRequest();
+//         postReviewXHR.open('POST', url);
+//         postReviewXHR.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+//         postReviewXHR.send(JSON.stringify(postObject));
 
-//Validates input form
-//TODO: Consider Removing this function
-function validateForm() {
-    var name = document.forms['add-review-form']['reviewer-name'].value;
-    var comment = document.forms['add-review-form']['comment-section'].value;
-    var ratingSlider = document.forms['add-review-form']['rating-label'].value;
-    if (name === "") {
-        alert('Name must be filled out');
-        return false;
-    }
-    if (comment === '') {
-        alert('Comment must be filled out');
-        return false;
-    }
-    if (ratingSlider == '') {
-        alert('Rating must be filled out');
-        return false;
-    }
-    return true;
-}
+//         postReviewXHR.onload = function() {
+//             // if (postReviewXHR.status === 200 || postReviewXHR.status === 201) {
+//                 resolve(postReviewXHR);
+//             // }
+//         }
 
-//Extracts restaurant id from restaurant object
-function getRestaurantID() {
-    let restaurant = self.restaurant;
-    return restaurant.id;
+//         postReviewXHR.onerror = function(e) {
+//             reject(e);
+//         }
+//     });
+
+// }
+
+// function addNewReviewToIndexedDB(postedData) {
+//     var openRequest = indexedDB.open('new-reviews', 1);
+//     openRequest.onupgradeneeded = function(e){
+//         var db = e.target.result;
+//         if(!db.objectStoreNames.contains('new-reviews')){
+//             db.createObjectStore('new-review', {keypath : 'name'});
+//             var index = objectStore.createIndex('name', 'name');
+//         }
+//     }
+
+//     openRequest.onsuccess = function(event) {
+//         let db = event.target.result;
+//         let transaction = db.transaction('new-review', 'readwrite');
+//         let store = transaction.objectStore('new-review');
+//         store.put(postedData, postedData.name);
+//         transaction.oncomplete = function() {
+//             db.close();
+//         }
+//     }
+// }
+
+function getAllNewReviews() {
+
+    return new Promise(function(resolve, reject) {
+        var openRequest = indexedDB.open('new-reviews', 1);
+        var outputArray = new Array();
+
+        openRequest.onsuccess = function(event) {
+            let db = event.target.result;
+            let transaction = db.transaction('new-review', 'readwrite');
+            let store = transaction.objectStore('new-review');
+            let request = store.getAll();
+
+            request.onsuccess = function(event) {
+                //Get all reviews on object store
+                let results = event.target.result;
+
+                results.forEach(function(result) {
+                    outputArray.push(result);
+                });
+                resolve(outputArray);
+            };
+
+                transaction.oncomplete = function() {
+                    db.close();
+                }
+        };
+        openRequest.onerror = function(error) {
+            reject(error);
+        };
+    });
 }

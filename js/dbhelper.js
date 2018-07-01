@@ -208,4 +208,50 @@ class DBHelper {
     return marker;
   }
 
+  static postNewReview(postObject) {
+    return new Promise(function(resolve, reject) {
+        let url = 'http://localhost:1337/reviews/';
+        let postReviewXHR = new XMLHttpRequest();
+        postReviewXHR.open('POST', url);
+        postReviewXHR.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+        postReviewXHR.send(JSON.stringify(postObject));
+
+        postReviewXHR.onload = function() {
+            // if (postReviewXHR.status === 200 || postReviewXHR.status === 201) {
+                resolve(postReviewXHR);
+            // }
+        }
+
+        postReviewXHR.onerror = function(e) {
+            reject(e);
+        }
+    });
+
+  }
+
+  static addNewReviewToIndexedDB(postedData) {
+    var openRequest = indexedDB.open('new-reviews', 1);
+    openRequest.onupgradeneeded = function(e){
+        var db = e.target.result;
+        if(!db.objectStoreNames.contains('new-reviews')){
+            db.createObjectStore('new-review', {keypath : 'name'});
+            var index = objectStore.createIndex('name', 'name');
+        }
+    }
+
+    openRequest.onsuccess = function(event) {
+        let db = event.target.result;
+        let transaction = db.transaction('new-review', 'readwrite');
+        let store = transaction.objectStore('new-review');
+        store.put(postedData, postedData.name);
+        transaction.oncomplete = function() {
+            db.close();
+        };
+    };
+  }
+
 }
+
+
+
+

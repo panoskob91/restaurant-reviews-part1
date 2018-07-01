@@ -174,7 +174,7 @@ function fetchRestaurantReviews(restaurant = self.restaurant) {
   return new Promise(function (resolve, reject) {
 
     // let restaurantReviewsURL = getRestaurantReviewsURL();
-    let restaurantReviewsURL = 'http://localhost:1337/reviews/';;
+    let restaurantReviewsURL = 'http://localhost:1337/reviews/';
     let reviewsXHR = new XMLHttpRequest();
     var restaurantReviewsArray = [];
 
@@ -210,10 +210,12 @@ function fetchRestaurantReviews(restaurant = self.restaurant) {
               restaurantReviewsArray.push(reviewJSON);
               self.reviews.push(reviewJSON);
             }
+
             if (self.idbIsSupported) {
               storeReviewsInIndexedDb(review);
             }
           });
+          // console.log(restaurantReviewsArray);
           keepLatestObjectStoreEntries();
           // restaurantReviewsArray.push(reviewJsonObject);
           // }
@@ -446,7 +448,7 @@ function updateDataSource(isFavorite, restaurantID) {
 
   let favoriteXHR = new XMLHttpRequest();
   favoriteXHR.open('POST', restaurantApiEndPoint);
-  favoriteXHR.setRequestHeader('Content-type', 'application/json');
+  favoriteXHR.setRequestHeader('Content-Type', 'application/json');
   let postedObject = self.restaurant;
   postedObject.is_favorite = isFavorite;
 
